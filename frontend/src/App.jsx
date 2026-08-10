@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   ArrowLeft,
   ArrowUp,
@@ -7,6 +9,7 @@ import {
   Check,
   ChevronRight,
   CircleUserRound,
+  Copy,
   Edit3,
   KeyRound,
   LayoutDashboard,
@@ -130,6 +133,70 @@ function getErrorMessage(error, fallback = "Something went wrong. Please try aga
   }
 
   return fallback;
+}
+
+
+function CodeBlock({ children }) {
+  const [copied, setCopied] = useState(false);
+  const resetTimerRef = useRef(null);
+  const codeElement = Array.isArray(children) ? children[0] : children;
+  const languageClass = codeElement?.props?.className || "";
+  const language = languageClass.replace(/^language-/, "") || "code";
+  const code = String(codeElement?.props?.children || "").replace(/\n$/, "");
+
+  useEffect(() => {
+    return () => window.clearTimeout(resetTimerRef.current);
+  }, []);
+
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="code-block">
+      <div className="code-block-header">
+        <span>{language}</span>
+        <button type="button" className="copy-code-button" onClick={copyCode}>
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          <span>{copied ? "Copied" : "Copy code"}</span>
+        </button>
+      </div>
+      <pre>{children}</pre>
+    </div>
+  );
+}
+
+
+function MarkdownMessage({ content }) {
+  return (
+    <div className="markdown-message">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          pre: CodeBlock,
+          code: ({ node: _node, className, children, ...props }) => (
+            <code className={className} {...props}>
+              {children}
+            </code>
+          ),
+          a: ({ node: _node, children, ...props }) => (
+            <a {...props} target="_blank" rel="noreferrer">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
 }
 
 
@@ -1591,9 +1658,13 @@ function App() {
                     <span className="message-avatar"><Bot size={17} /></span>
                   )}
                   <div className="message-bubble">
-                    {message.content.split("\n").map((line, index) => (
-                      <p key={`${message.id}-${index}`}>{line || <br />}</p>
-                    ))}
+                    {message.role === "assistant" ? (
+                      <MarkdownMessage content={message.content} />
+                    ) : (
+                      message.content.split("\n").map((line, index) => (
+                        <p key={`${message.id}-${index}`}>{line || <br />}</p>
+                      ))
+                    )}
                   </div>
                   {message.role === "user" && <Avatar user={user} size="small" />}
                 </article>

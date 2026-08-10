@@ -3,7 +3,8 @@ dj-database-url==3.1.2
 django-cors-headers==4.9.0
 djangorestframework==3.18.0
 djangorestframework-simplejwt==5.5.1
-openai==2.53.0
 Pillow
 psycopg[binary]==3.3.4
 python-dotenv==1.2.2
+waitress==3.0.2
+whitenoise==6.11.0

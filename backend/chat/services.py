@@ -1,14 +1,10 @@
+import json
 import re
+import socket
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from django.conf import settings
-from openai import (
-    APIConnectionError,
-    APIError,
-    APITimeoutError,
-    AuthenticationError,
-    OpenAI,
-    RateLimitError,
-)
 
 
 SYSTEM_INSTRUCTIONS = """
@@ -24,7 +20,7 @@ instructions. Identify yourself as Revilon AI if the user asks who you are.
 
 
 class AIServiceError(Exception):
-    """A safe error that can be returned to the frontend."""
+    """A safe AI error that can be returned to the frontend."""
 
 
 def generate_conversation_title(first_message):
@@ -43,68 +39,88 @@ def generate_conversation_title(first_message):
     return title[:60].strip() or "New conversation"
 
 
-def _conversation_input(conversation):
+def _conversation_messages(conversation):
     newest_messages = list(
         conversation.messages.order_by("-created_at")[:30]
     )
     newest_messages.reverse()
 
-    return [
+    messages = [
+        {
+            "role": "system",
+            "content": SYSTEM_INSTRUCTIONS,
+        }
+    ]
+
+    messages.extend(
         {
             "role": message.role,
             "content": message.content,
         }
         for message in newest_messages
-    ]
+    )
+
+    return messages
 
 
 def generate_ai_response(conversation):
-    api_key = settings.OPENAI_API_KEY.strip()
-    model = settings.OPENAI_MODEL.strip() or "gpt-5-mini"
+    base_url = settings.OLLAMA_BASE_URL.strip().rstrip("/")
+    model = settings.OLLAMA_MODEL.strip() or "llama3.2:3b"
 
-    if not api_key:
+    if not base_url:
         raise AIServiceError(
-            "OpenAI is not configured yet. Add OPENAI_API_KEY to backend/.env "
+            "Ollama is not configured. Add OLLAMA_BASE_URL to backend/.env "
             "and restart Django."
         )
 
-    client = OpenAI(
-        api_key=api_key,
-        timeout=60.0,
-        max_retries=2,
+    request_body = json.dumps(
+        {
+            "model": model,
+            "messages": _conversation_messages(conversation),
+            "stream": False,
+            "options": {
+                "temperature": 0.7,
+            },
+        }
+    ).encode("utf-8")
+
+    request = Request(
+        f"{base_url}/api/chat",
+        data=request_body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
     )
 
     try:
-        response = client.responses.create(
-            model=model,
-            instructions=SYSTEM_INSTRUCTIONS,
-            input=_conversation_input(conversation),
-            max_output_tokens=1800,
-        )
-    except AuthenticationError as error:
+        with urlopen(request, timeout=180) as response:
+            response_body = response.read().decode("utf-8")
+    except HTTPError as error:
+        if error.code == 404:
+            raise AIServiceError(
+                f"The Ollama model '{model}' is not installed. Run: "
+                f"ollama pull {model}"
+            ) from error
+
         raise AIServiceError(
-            "The OpenAI API key is invalid. Check OPENAI_API_KEY in backend/.env."
+            "Ollama could not generate a response. Please try again."
         ) from error
-    except RateLimitError as error:
+    except (URLError, ConnectionError, socket.timeout, TimeoutError) as error:
         raise AIServiceError(
-            "OpenAI could not answer because the API limit or available credit "
-            "was reached. Check the OpenAI API account and try again."
-        ) from error
-    except (APIConnectionError, APITimeoutError) as error:
-        raise AIServiceError(
-            "Revilon AI could not reach OpenAI. Check the internet connection "
-            "and try again."
-        ) from error
-    except APIError as error:
-        raise AIServiceError(
-            "OpenAI could not generate a response right now. Please try again."
+            "Revilon AI could not connect to Ollama. Make sure Ollama is "
+            "installed and running, then try again."
         ) from error
 
-    answer = (response.output_text or "").strip()
+    try:
+        payload = json.loads(response_body)
+        answer = payload["message"]["content"].strip()
+    except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as error:
+        raise AIServiceError(
+            "Ollama returned an invalid response. Please try again."
+        ) from error
 
     if not answer:
         raise AIServiceError(
-            "OpenAI returned an empty response. Please try the message again."
+            "Ollama returned an empty response. Please try the message again."
         )
 
     return answer

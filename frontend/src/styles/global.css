@@ -1102,6 +1102,176 @@ textarea:disabled {
   background: #d8d8d6;
 }
 
+.markdown-message > :first-child {
+  margin-top: 0;
+}
+
+.markdown-message > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-message p {
+  margin: 0 0 14px;
+}
+
+.markdown-message h1,
+.markdown-message h2,
+.markdown-message h3,
+.markdown-message h4 {
+  margin: 24px 0 10px;
+  color: #e5e5e2;
+  font-family: "Manrope", sans-serif;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.markdown-message h1 { font-size: 22px; }
+.markdown-message h2 { font-size: 19px; }
+.markdown-message h3 { font-size: 16px; }
+.markdown-message h4 { font-size: 14px; }
+
+.markdown-message ul,
+.markdown-message ol {
+  margin: 0 0 14px;
+  padding-left: 24px;
+}
+
+.markdown-message li {
+  margin: 5px 0;
+}
+
+.markdown-message strong {
+  color: #e7e7e4;
+  font-weight: 650;
+}
+
+.markdown-message a {
+  color: #d7d7d4;
+  text-decoration: underline;
+  text-decoration-color: #666663;
+  text-underline-offset: 3px;
+}
+
+.markdown-message blockquote {
+  margin: 16px 0;
+  padding: 2px 0 2px 14px;
+  border-left: 2px solid #555552;
+  color: #aaa9a5;
+}
+
+.markdown-message hr {
+  margin: 22px 0;
+  border: 0;
+  border-top: 1px solid #2e2e2d;
+}
+
+.markdown-message :not(pre) > code {
+  padding: 2px 6px;
+  border: 1px solid #353534;
+  border-radius: 5px;
+  color: #e0e0dd;
+  background: #181818;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.9em;
+}
+
+.markdown-message table {
+  width: 100%;
+  margin: 16px 0;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.markdown-message th,
+.markdown-message td {
+  padding: 9px 11px;
+  border: 1px solid #333332;
+  text-align: left;
+}
+
+.markdown-message th {
+  color: #e0e0dd;
+  background: #171717;
+}
+
+.code-block {
+  width: 100%;
+  margin: 16px 0 18px;
+  overflow: hidden;
+  border: 1px solid #333332;
+  border-radius: 10px;
+  background: #111;
+}
+
+.code-block-header {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 12px 0 15px;
+  border-bottom: 1px solid #2d2d2c;
+  color: #969693;
+  background: #191919;
+  font-size: 12px;
+  text-transform: lowercase;
+}
+
+.copy-code-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  color: #bcbcb8;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: color 0.16s ease, background 0.16s ease;
+}
+
+.copy-code-button:hover {
+  color: #ecece9;
+  background: #292928;
+}
+
+.copy-code-button:focus-visible {
+  outline: 2px solid #777773;
+  outline-offset: 2px;
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  color: #dededb;
+  background: #111;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.code-block pre code {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  white-space: pre;
+}
+
+.code-block pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.code-block pre::-webkit-scrollbar-thumb {
+  border: 2px solid #111;
+  border-radius: 999px;
+  background: #4a4a48;
+}
+
 .loading-message {
   height: 30px;
   display: flex;
