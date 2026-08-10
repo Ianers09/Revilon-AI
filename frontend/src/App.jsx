@@ -1080,18 +1080,16 @@ function App() {
                 rows="1"
                 value={landingMessage}
                 onChange={(event) => setLandingMessage(event.target.value)}
-                placeholder="Begin a conversation"
+                placeholder="Write a message"
               />
 
-              <div className="landing-composer-footer landing-composer-footer-end">
-                <button
-                  className="landing-send-button"
-                  type="submit"
-                  aria-label="Continue"
-                >
-                  <ArrowUp size={18} />
-                </button>
-              </div>
+              <button
+                className="landing-send-button"
+                type="submit"
+                aria-label="Continue"
+              >
+                <ArrowUp size={18} />
+              </button>
             </form>
 
             <p className="landing-small-note">

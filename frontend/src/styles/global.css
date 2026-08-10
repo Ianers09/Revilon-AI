@@ -302,9 +302,13 @@ textarea:disabled {
 }
 
 .landing-composer {
-  padding: 8px;
-  border: 1px solid #303030;
-  border-radius: 20px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 11px 11px 17px;
+  border: 1px solid #3d3d3d;
+  border-radius: 17px;
   background: #111;
   text-align: left;
   transition: border-color 150ms ease;
@@ -315,10 +319,11 @@ textarea:disabled {
 }
 
 .landing-composer textarea {
-  width: 100%;
-  min-height: 58px;
-  max-height: 170px;
-  padding: 12px 14px 8px;
+  min-width: 0;
+  min-height: 40px;
+  max-height: 160px;
+  flex: 1;
+  padding: 9px 0;
   border: 0;
   outline: 0;
   resize: none;
@@ -330,18 +335,6 @@ textarea:disabled {
 
 .landing-composer textarea::placeholder {
   color: #777;
-}
-
-.landing-composer-footer {
-  min-height: 37px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 3px 0 6px;
-}
-
-.landing-composer-footer-end {
-  justify-content: flex-end;
 }
 
 .landing-icon-button {
@@ -362,12 +355,14 @@ textarea:disabled {
 }
 
 .landing-send-button {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   border: 0;
-  border-radius: 50%;
+  border-radius: 11px;
   background: var(--white-soft);
   color: #090909;
   cursor: pointer;
