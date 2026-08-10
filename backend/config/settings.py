@@ -222,6 +222,11 @@ OLLAMA_MODEL = os.getenv(
     "llama3.2:3b",
 )
 
+OLLAMA_API_KEY = os.getenv(
+    "OLLAMA_API_KEY",
+    "",
+)
+
 
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND",

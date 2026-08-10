@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: revilon-ai
+    runtime: python
+    plan: free
+    buildCommand: >-
+      pip install -r backend/requirements.txt &&
+      cd frontend && npm ci && npm run build &&
+      cd ../backend && python manage.py collectstatic --noinput
+    startCommand: >-
+      cd backend && python manage.py migrate &&
+      waitress-serve --listen=0.0.0.0:$PORT config.wsgi:application
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://revilon-ai.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://revilon-ai.onrender.com
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
+      - key: OLLAMA_BASE_URL
+        value: https://ollama.com
+      - key: OLLAMA_MODEL
+        value: gpt-oss:20b
+      - key: OLLAMA_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false

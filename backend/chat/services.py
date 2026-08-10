@@ -84,10 +84,15 @@ def generate_ai_response(conversation):
         }
     ).encode("utf-8")
 
+    headers = {"Content-Type": "application/json"}
+    api_key = settings.OLLAMA_API_KEY.strip()
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
     request = Request(
         f"{base_url}/api/chat",
         data=request_body,
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
 
@@ -95,10 +100,16 @@ def generate_ai_response(conversation):
         with urlopen(request, timeout=180) as response:
             response_body = response.read().decode("utf-8")
     except HTTPError as error:
+        if error.code in (401, 403):
+            raise AIServiceError(
+                "Ollama rejected the API key. Check OLLAMA_API_KEY in the "
+                "deployment settings."
+            ) from error
+
         if error.code == 404:
             raise AIServiceError(
-                f"The Ollama model '{model}' is not installed. Run: "
-                f"ollama pull {model}"
+                f"The Ollama model '{model}' is not available at the "
+                "configured Ollama host."
             ) from error
 
         raise AIServiceError(
