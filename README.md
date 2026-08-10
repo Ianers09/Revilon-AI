@@ -97,8 +97,11 @@ a local Ollama model cannot fit in a free 512 MB Render instance.
    settings.
 4. In Render, choose **New > Blueprint**, connect this repository, and deploy
    `render.yaml`.
-5. When Render asks for secrets, set `DATABASE_URL` to the Postgres connection
-   string and `OLLAMA_API_KEY` to the Ollama key.
+5. Create a free Brevo account, add and verify a sender email under
+   **Settings > Senders**, then create an API key under **SMTP & API > API Keys**.
+6. When Render asks for secrets, set `DATABASE_URL` to the Postgres connection
+   string, `OLLAMA_API_KEY` to the Ollama key, `BREVO_API_KEY` to the Brevo key,
+   and `BREVO_SENDER_EMAIL` to the exact sender address you verified in Brevo.
 
 The public site will be `https://revilon-ai.onrender.com` if that service name
 is available. If Render assigns a different name, update `DJANGO_ALLOWED_HOSTS`,

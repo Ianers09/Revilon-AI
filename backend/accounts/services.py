@@ -1,5 +1,8 @@
 import secrets
+import json
 from datetime import timedelta
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -28,6 +31,89 @@ class VerificationRateLimitError(Exception):
 
 def generate_code():
     return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def _send_with_brevo(user, subject, message):
+    if not settings.BREVO_API_KEY or not settings.BREVO_SENDER_EMAIL:
+        raise EmailDeliveryError(
+            "Brevo email delivery is not configured."
+        )
+
+    payload = json.dumps(
+        {
+            "sender": {
+                "name": settings.BREVO_SENDER_NAME,
+                "email": settings.BREVO_SENDER_EMAIL,
+            },
+            "to": [
+                {
+                    "email": user.email,
+                    "name": user.get_full_name().strip() or user.username,
+                }
+            ],
+            "subject": subject,
+            "textContent": message,
+        }
+    ).encode("utf-8")
+
+    request = Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=payload,
+        headers={
+            "accept": "application/json",
+            "api-key": settings.BREVO_API_KEY,
+            "content-type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urlopen(request, timeout=20) as response:
+            if response.status != 201:
+                raise EmailDeliveryError(
+                    "Brevo did not accept the verification email."
+                )
+    except (HTTPError, URLError, TimeoutError) as error:
+        raise EmailDeliveryError(
+            "The verification email could not be sent through Brevo."
+        ) from error
+
+
+def _send_with_smtp(user, subject, message):
+    connection = get_connection(
+        backend="django.core.mail.backends.smtp.EmailBackend",
+        host=settings.EMAIL_HOST,
+        port=settings.EMAIL_PORT,
+        username=settings.EMAIL_HOST_USER,
+        password=settings.EMAIL_HOST_PASSWORD,
+        use_tls=settings.EMAIL_USE_TLS,
+        timeout=20,
+    )
+
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        from_email=(
+            settings.EMAIL_HOST_USER
+            or settings.DEFAULT_FROM_EMAIL
+        ),
+        to=[user.email],
+        connection=connection,
+    )
+
+    try:
+        sent_count = email.send(fail_silently=False)
+    except Exception as error:
+        raise EmailDeliveryError(
+            "The verification email could not be sent."
+        ) from error
+    finally:
+        connection.close()
+
+    if sent_count != 1:
+        raise EmailDeliveryError(
+            "The verification email could not be sent."
+        )
 
 
 def send_verification_code(user, enforce_cooldown=False):
@@ -76,43 +162,13 @@ def send_verification_code(user, enforce_cooldown=False):
         "Revilon AI"
     )
 
-    connection = get_connection(
-        backend="django.core.mail.backends.smtp.EmailBackend",
-        host=settings.EMAIL_HOST,
-        port=settings.EMAIL_PORT,
-        username=settings.EMAIL_HOST_USER,
-        password=settings.EMAIL_HOST_PASSWORD,
-        use_tls=settings.EMAIL_USE_TLS,
-        timeout=20,
-    )
-
-    email = EmailMessage(
-        subject=subject,
-        body=message,
-        from_email=(
-            settings.EMAIL_HOST_USER
-            or settings.DEFAULT_FROM_EMAIL
-        ),
-        to=[user.email],
-        connection=connection,
-    )
-
     try:
-        sent_count = email.send(fail_silently=False)
-    except Exception as error:
+        if settings.EMAIL_PROVIDER == "brevo":
+            _send_with_brevo(user, subject, message)
+        else:
+            _send_with_smtp(user, subject, message)
+    except EmailDeliveryError:
         verification.delete()
-
-        raise EmailDeliveryError(
-            "The verification email could not be sent."
-        ) from error
-    finally:
-        connection.close()
-
-    if sent_count != 1:
-        verification.delete()
-
-        raise EmailDeliveryError(
-            "The verification email could not be sent."
-        )
+        raise
 
     return verification

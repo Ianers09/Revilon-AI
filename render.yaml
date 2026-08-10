@@ -26,6 +26,14 @@ services:
         value: https://revilon-ai.onrender.com
       - key: EMAIL_BACKEND
         value: django.core.mail.backends.console.EmailBackend
+      - key: EMAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        value: Revilon AI
       - key: OLLAMA_BASE_URL
         value: https://ollama.com
       - key: OLLAMA_MODEL
