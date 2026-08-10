@@ -340,6 +340,10 @@ textarea:disabled {
   padding: 0 3px 0 6px;
 }
 
+.landing-composer-footer-end {
+  justify-content: flex-end;
+}
+
 .landing-icon-button {
   width: 34px;
   height: 34px;

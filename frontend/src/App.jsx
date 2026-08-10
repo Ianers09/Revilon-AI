@@ -17,10 +17,10 @@ import {
   Menu,
   MessageSquare,
   MoreHorizontal,
-  Paperclip,
   Plus,
   Search,
   Shield,
+  Square,
   Trash2,
   Upload,
   UserCog,
@@ -404,6 +404,7 @@ function App() {
 
   const messageEndRef = useRef(null);
   const profileFileRef = useRef(null);
+  const chatAbortControllerRef = useRef(null);
 
   const isAuthenticated = Boolean(user);
   const isAdminPage = path === "/admin";
@@ -538,6 +539,10 @@ function App() {
       }
     };
   }, [profilePreview]);
+
+  useEffect(() => () => {
+    chatAbortControllerRef.current?.abort();
+  }, []);
 
   const openAuth = (mode) => {
     setAuthMode(mode);
@@ -752,18 +757,28 @@ function App() {
     setChatError("");
     setMessages((current) => [...current, optimisticMessage]);
     setChatBusy(true);
+    const abortController = new AbortController();
+    chatAbortControllerRef.current = abortController;
 
     try {
-      const response = await api.post("/chat/messages/", {
-        content,
-        conversation_id: activeConversation?.id || null,
-      });
+      const response = await api.post(
+        "/chat/messages/",
+        {
+          content,
+          conversation_id: activeConversation?.id || null,
+        },
+        { signal: abortController.signal },
+      );
 
       const conversation = response.data.conversation;
       setActiveConversation(conversation);
       setMessages(conversation.messages || []);
       await loadConversations();
     } catch (error) {
+      if (axios.isCancel(error)) {
+        return;
+      }
+
       const savedConversation = error.response?.data?.conversation;
 
       if (savedConversation) {
@@ -779,8 +794,15 @@ function App() {
         ),
       );
     } finally {
+      if (chatAbortControllerRef.current === abortController) {
+        chatAbortControllerRef.current = null;
+      }
       setChatBusy(false);
     }
+  };
+
+  const stopGenerating = () => {
+    chatAbortControllerRef.current?.abort();
   };
 
   const confirmDeleteConversation = async () => {
@@ -1061,16 +1083,7 @@ function App() {
                 placeholder="Begin a conversation"
               />
 
-              <div className="landing-composer-footer">
-                <button
-                  className="landing-icon-button"
-                  type="button"
-                  onClick={() => openAuth("login")}
-                  aria-label="Attach file"
-                >
-                  <Paperclip size={18} />
-                </button>
-
+              <div className="landing-composer-footer landing-composer-footer-end">
                 <button
                   className="landing-send-button"
                   type="submit"
@@ -1700,8 +1713,14 @@ function App() {
               rows="1"
               disabled={chatBusy}
             />
-            <button type="submit" disabled={!messageText.trim() || chatBusy} aria-label="Send message">
-              <ArrowUp size={19} />
+            <button
+              type={chatBusy ? "button" : "submit"}
+              disabled={!chatBusy && !messageText.trim()}
+              aria-label={chatBusy ? "Stop generating" : "Send message"}
+              title={chatBusy ? "Stop generating" : "Send message"}
+              onClick={chatBusy ? stopGenerating : undefined}
+            >
+              {chatBusy ? <Square size={15} fill="currentColor" /> : <ArrowUp size={19} />}
             </button>
           </form>
           <p className="chat-disclaimer">
