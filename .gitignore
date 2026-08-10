@@ -1,0 +1,23 @@
+# Python virtual environment
+.venv/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python and Django generated files
+__pycache__/
+*.py[cod]
+*.sqlite3
+backend/staticfiles/
+backend/media/
+
+# Frontend generated files
+frontend/node_modules/
+frontend/dist/
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db
