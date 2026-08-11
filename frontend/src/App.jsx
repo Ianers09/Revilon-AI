@@ -406,7 +406,7 @@ function App() {
   const [adminActionError, setAdminActionError] = useState("");
   const [adminDeleteUser, setAdminDeleteUser] = useState(null);
 
-  const messageEndRef = useRef(null);
+  const chatContentRef = useRef(null);
   const profileFileRef = useRef(null);
   const chatAbortControllerRef = useRef(null);
 
@@ -500,7 +500,13 @@ function App() {
   }, [user?.id, user?.is_staff, isAdminPage]);
 
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const chatContent = chatContentRef.current;
+    if (!chatContent) return;
+
+    chatContent.scrollTo({
+      top: chatContent.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages, chatBusy]);
 
   const loadAdminUsers = async (searchValue = "") => {
@@ -1699,7 +1705,7 @@ function App() {
           <span>{conversationTitle}</span>
         </header>
 
-        <div className="chat-content">
+        <div className="chat-content" ref={chatContentRef}>
           {messages.length === 0 ? (
             <section className="empty-chat">
               <span className="empty-chat-mark">R</span>
@@ -1737,7 +1743,6 @@ function App() {
                   </div>
                 </article>
               )}
-              <div ref={messageEndRef} />
             </section>
           )}
         </div>
