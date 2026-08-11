@@ -228,9 +228,27 @@ class LoginView(APIView):
             and not candidate.is_active
             and EmailVerificationCode.objects.filter(user=candidate).exists()
         ):
+            message = "A new verification code was sent to your email."
+            try:
+                send_verification_code(candidate, enforce_cooldown=True)
+            except VerificationRateLimitError:
+                message = (
+                    "A verification code was recently sent to your email."
+                )
+            except EmailDeliveryError:
+                return Response(
+                    {
+                        "detail": (
+                            "Your password is correct, but the verification "
+                            "email could not be sent. Please try again."
+                        )
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+
             return Response(
                 {
-                    "detail": "Verify your email address before signing in.",
+                    "detail": message,
                     "code": "email_not_verified",
                     "email": candidate.email,
                 },

@@ -640,7 +640,7 @@ function App() {
       if (error.response?.data?.code === "email_not_verified") {
         openVerification(
           error.response.data.email,
-          "Enter the verification code sent when you registered.",
+          error.response.data.detail || "A verification code was sent to your email.",
         );
         return;
       }
