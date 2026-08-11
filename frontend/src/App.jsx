@@ -413,6 +413,26 @@ function App() {
   const isAuthenticated = Boolean(user);
   const isAdminPage = path === "/admin";
 
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const updateAppHeight = () => {
+      const height = viewport?.height || window.innerHeight;
+      document.documentElement.style.setProperty("--app-height", `${height}px`);
+    };
+
+    updateAppHeight();
+    window.addEventListener("resize", updateAppHeight);
+    window.addEventListener("orientationchange", updateAppHeight);
+    viewport?.addEventListener("resize", updateAppHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateAppHeight);
+      window.removeEventListener("orientationchange", updateAppHeight);
+      viewport?.removeEventListener("resize", updateAppHeight);
+      document.documentElement.style.removeProperty("--app-height");
+    };
+  }, []);
+
   const navigate = (nextPath) => {
     window.history.pushState({}, "", nextPath);
     setPath(nextPath);
@@ -1791,15 +1811,24 @@ function App() {
       )}
 
       {renameConversation && (
-        <Modal onClose={() => setRenameConversation(null)} className="confirm-modal">
-          <form onSubmit={submitRenameConversation}>
-            <h2>Rename conversation</h2>
-            <label className="field-label">
-              Name
+        <Modal onClose={() => setRenameConversation(null)} className="rename-modal">
+          <button className="modal-close" type="button" onClick={() => setRenameConversation(null)} aria-label="Close">
+            <X size={18} />
+          </button>
+          <div className="modal-heading">
+            <span className="modal-icon"><Edit3 size={19} /></span>
+            <div>
+              <h2>Rename conversation</h2>
+              <p>Choose a clear name that will be easy to find later.</p>
+            </div>
+          </div>
+          <form className="form-stack rename-form" onSubmit={submitRenameConversation}>
+            <label>
+              <span>Conversation name</span>
               <input autoFocus value={renameTitle} maxLength={255} onChange={(event) => setRenameTitle(event.target.value)} />
             </label>
             <div className="modal-actions">
-              <button className="button button-ghost" type="button" onClick={() => setRenameConversation(null)}>Cancel</button>
+              <button className="button button-outline" type="button" onClick={() => setRenameConversation(null)}>Cancel</button>
               <button className="button button-light" type="submit" disabled={renameBusy || !renameTitle.trim()}>
                 {renameBusy ? "Saving..." : "Rename"}
               </button>

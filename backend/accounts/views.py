@@ -239,7 +239,7 @@ class LoginView(APIView):
 
         user = authenticate(
             request=request,
-            username=username,
+            username=candidate.username if candidate is not None else username,
             password=password,
         )
 
