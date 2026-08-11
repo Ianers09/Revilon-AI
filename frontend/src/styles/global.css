@@ -1062,6 +1062,48 @@ textarea:disabled {
   padding: 0 8px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-color: #3a3a38 transparent;
+  scrollbar-width: thin;
+}
+
+.modal-panel,
+.admin-main {
+  scrollbar-color: #3a3a38 transparent;
+  scrollbar-width: thin;
+}
+
+.conversation-list::-webkit-scrollbar,
+.chat-content::-webkit-scrollbar,
+.modal-panel::-webkit-scrollbar,
+.admin-main::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.conversation-list::-webkit-scrollbar-track,
+.chat-content::-webkit-scrollbar-track,
+.modal-panel::-webkit-scrollbar-track,
+.admin-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb,
+.chat-content::-webkit-scrollbar-thumb,
+.modal-panel::-webkit-scrollbar-thumb,
+.admin-main::-webkit-scrollbar-thumb {
+  min-height: 42px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #3a3a38;
+  background-clip: padding-box;
+}
+
+.conversation-list::-webkit-scrollbar-thumb:hover,
+.chat-content::-webkit-scrollbar-thumb:hover,
+.modal-panel::-webkit-scrollbar-thumb:hover,
+.admin-main::-webkit-scrollbar-thumb:hover {
+  background: #565653;
+  background-clip: padding-box;
 }
 
 .conversation-item {
@@ -1198,6 +1240,8 @@ textarea:disabled {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-color: #3a3a38 transparent;
+  scrollbar-width: thin;
 }
 
 .empty-chat {
