@@ -1815,19 +1815,20 @@ function App() {
           <button className="modal-close" type="button" onClick={() => setRenameConversation(null)} aria-label="Close">
             <X size={18} />
           </button>
-          <div className="modal-heading">
-            <span className="modal-icon"><Edit3 size={19} /></span>
-            <div>
+          <div className="rename-modal-heading">
+            <span className="rename-modal-icon"><Edit3 size={19} /></span>
+            <div className="rename-modal-copy">
               <h2>Rename conversation</h2>
               <p>Choose a clear name that will be easy to find later.</p>
             </div>
           </div>
-          <form className="form-stack rename-form" onSubmit={submitRenameConversation}>
-            <label>
+          <form className="rename-form" onSubmit={submitRenameConversation}>
+            <label className="rename-field">
               <span>Conversation name</span>
-              <input autoFocus value={renameTitle} maxLength={255} onChange={(event) => setRenameTitle(event.target.value)} />
+              <input autoFocus value={renameTitle} maxLength={255} onChange={(event) => setRenameTitle(event.target.value)} placeholder="Enter a conversation name" />
+              <small>{renameTitle.length}/255</small>
             </label>
-            <div className="modal-actions">
+            <div className="rename-actions">
               <button className="button button-outline" type="button" onClick={() => setRenameConversation(null)}>Cancel</button>
               <button className="button button-light" type="submit" disabled={renameBusy || !renameTitle.trim()}>
                 {renameBusy ? "Saving..." : "Rename"}

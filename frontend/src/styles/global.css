@@ -424,6 +424,8 @@ textarea:disabled {
 
 .rename-modal {
   width: min(100%, 460px);
+  padding: 0;
+  overflow: hidden;
 }
 
 .modal-close {
@@ -541,12 +543,100 @@ textarea:disabled {
   outline: none;
 }
 
-.rename-form {
-  gap: 22px;
+.rename-modal .modal-close {
+  top: 20px;
+  right: 20px;
 }
 
-.rename-form .modal-actions {
-  margin-top: 0;
+.rename-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 25px 64px 21px 25px;
+  border-bottom: 1px solid #292929;
+}
+
+.rename-modal-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid #3b3b3b;
+  border-radius: 11px;
+  color: #d5d5d2;
+  background: #1b1b1b;
+}
+
+.rename-modal-copy {
+  min-width: 0;
+}
+
+.rename-modal-copy h2 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  font-size: 19px;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+}
+
+.rename-modal-copy p {
+  margin: 5px 0 0;
+  color: #8f8f8c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.rename-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 22px 25px 25px;
+}
+
+.rename-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rename-field > span {
+  color: #c9c9c6;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rename-field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 66px 0 13px;
+  border: 1px solid #3d3d3d;
+  border-radius: 10px;
+  outline: none;
+  color: var(--text);
+  background: #0d0d0d;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.rename-field input:focus {
+  border-color: #777774;
+  box-shadow: 0 0 0 3px rgba(140, 140, 137, 0.12);
+}
+
+.rename-field small {
+  position: absolute;
+  right: 13px;
+  bottom: 15px;
+  color: #656562;
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.rename-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
 }
 
 .button-submit {

@@ -17,10 +17,14 @@ def react_app(request):
             content_type="text/plain",
         )
 
-    return FileResponse(
+    response = FileResponse(
         index_file.open("rb"),
         content_type="text/html",
     )
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
 
 
 urlpatterns = [
