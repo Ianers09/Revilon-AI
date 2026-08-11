@@ -413,26 +413,6 @@ function App() {
   const isAuthenticated = Boolean(user);
   const isAdminPage = path === "/admin";
 
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    const updateAppHeight = () => {
-      const height = viewport?.height || window.innerHeight;
-      document.documentElement.style.setProperty("--app-height", `${height}px`);
-    };
-
-    updateAppHeight();
-    window.addEventListener("resize", updateAppHeight);
-    window.addEventListener("orientationchange", updateAppHeight);
-    viewport?.addEventListener("resize", updateAppHeight);
-
-    return () => {
-      window.removeEventListener("resize", updateAppHeight);
-      window.removeEventListener("orientationchange", updateAppHeight);
-      viewport?.removeEventListener("resize", updateAppHeight);
-      document.documentElement.style.removeProperty("--app-height");
-    };
-  }, []);
-
   const navigate = (nextPath) => {
     window.history.pushState({}, "", nextPath);
     setPath(nextPath);
@@ -744,13 +724,13 @@ function App() {
     setActiveConversation(null);
     setMessages([]);
     setChatError("");
-    setConversationMenuId(null);
+    setConversationMenu(null);
     setMobileSidebarOpen(false);
   };
 
   const selectConversation = async (conversation) => {
     setChatError("");
-    setConversationMenuId(null);
+    setConversationMenu(null);
     setMobileSidebarOpen(false);
 
     try {
@@ -1795,11 +1775,21 @@ function App() {
       </main>
 
       {deleteConversation && (
-        <Modal onClose={() => setDeleteConversation(null)} className="confirm-modal">
-          <span className="danger-icon"><Trash2 size={20} /></span>
-          <h2>Delete conversation?</h2>
-          <p>This permanently deletes “{deleteConversation.title}” and all of its messages.</p>
-          <div className="modal-actions">
+        <Modal onClose={() => setDeleteConversation(null)} className="delete-modal">
+          <button className="modal-close" type="button" onClick={() => setDeleteConversation(null)} aria-label="Close">
+            <X size={18} />
+          </button>
+          <div className="delete-modal-heading">
+            <span className="delete-modal-icon"><Trash2 size={19} /></span>
+            <div className="delete-modal-copy">
+              <h2>Delete conversation?</h2>
+              <p>This action cannot be undone.</p>
+            </div>
+          </div>
+          <div className="delete-modal-body">
+            <p>This permanently deletes <strong>“{deleteConversation.title}”</strong> and all of its messages.</p>
+          </div>
+          <div className="delete-actions">
             <button className="button button-outline" type="button" onClick={() => setDeleteConversation(null)}>
               Cancel
             </button>
