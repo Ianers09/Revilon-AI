@@ -200,6 +200,7 @@ textarea:disabled {
 
 .landing-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -1817,16 +1818,33 @@ textarea:disabled {
   }
 
   .landing-header {
+    height: 68px;
     padding-left: 18px;
     padding-right: 18px;
   }
 
-  .landing-sign-in {
-    display: none;
+  .landing-actions {
+    gap: 6px;
+  }
+
+  .landing-sign-in,
+  .landing-sign-up {
+    height: 38px;
+    padding: 0 13px;
+    font-size: 12px;
   }
 
   .landing-main {
-    padding: 45px 16px 80px;
+    min-height: 0;
+    padding: 36px 16px 64px;
+  }
+
+  .landing-content h1 {
+    font-size: clamp(34px, 11vw, 46px);
+  }
+
+  .landing-composer {
+    min-height: 60px;
   }
 
   .form-grid-two {
@@ -1996,10 +2014,41 @@ textarea:disabled {
 }
 
 @media (max-width: 480px) {
+  .landing-header {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .landing-header .brand-button {
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .landing-page .brand-mark {
+    width: 27px;
+    height: 27px;
+  }
+
+  .landing-sign-in,
   .landing-sign-up {
-    min-height: 38px;
-    padding: 0 12px;
-    font-size: 12px;
+    height: 36px;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
+
+  .landing-main {
+    padding: 28px 14px 48px;
+  }
+
+  .landing-hero-mark {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 15px;
+    font-size: 25px;
+  }
+
+  .landing-content > p:first-of-type {
+    margin-bottom: 26px;
   }
 
   .landing-content > p:first-of-type {
@@ -2025,5 +2074,27 @@ textarea:disabled {
 
   .modal-actions .button {
     width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .landing-header {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .landing-header .brand-button {
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .landing-actions {
+    gap: 4px;
+  }
+
+  .landing-sign-in,
+  .landing-sign-up {
+    padding: 0 8px;
+    font-size: 11px;
   }
 }
