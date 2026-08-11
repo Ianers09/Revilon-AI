@@ -256,10 +256,10 @@ function Avatar({ user, size = "medium" }) {
 
 function Modal({ children, onClose, className = "" }) {
   return (
-    <div className="modal-backdrop" onMouseDown={onClose}>
+    <div className="modal-backdrop" onPointerDown={onClose}>
       <section
         className={`modal-panel ${className}`}
-        onMouseDown={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
       >
         {children}
       </section>
@@ -508,6 +508,30 @@ function App() {
       behavior: "smooth",
     });
   }, [messages, chatBusy]);
+
+  useEffect(() => {
+    if (!accountMenuOpen && !conversationMenu) return undefined;
+
+    const closeOpenMenus = (event) => {
+      if (
+        accountMenuOpen
+        && !event.target.closest(".account-area")
+      ) {
+        setAccountMenuOpen(false);
+      }
+
+      if (
+        conversationMenu
+        && !event.target.closest(".conversation-menu")
+        && !event.target.closest(".conversation-more")
+      ) {
+        setConversationMenu(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOpenMenus);
+    return () => document.removeEventListener("pointerdown", closeOpenMenus);
+  }, [accountMenuOpen, conversationMenu]);
 
   const loadAdminUsers = async (searchValue = "") => {
     if (!user?.is_staff) {
