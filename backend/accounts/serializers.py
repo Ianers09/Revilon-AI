@@ -8,10 +8,12 @@ from .models import Profile
 def get_profile_picture_url(user, request=None):
     profile, _ = Profile.objects.get_or_create(user=user)
 
-    if not profile.profile_picture:
+    if profile.profile_picture_data:
+        picture_url = f"/api/auth/profile/picture/{user.id}/"
+    elif profile.profile_picture:
+        picture_url = profile.profile_picture.url
+    else:
         return None
-
-    picture_url = profile.profile_picture.url
 
     if request is not None:
         return request.build_absolute_uri(picture_url)

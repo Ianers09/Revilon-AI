@@ -8,6 +8,7 @@ from .views import (
     LoginView,
     LogoutView,
     ProfilePictureView,
+    ProfilePictureContentView,
     ProfileView,
     RegisterView,
     ResendVerificationView,
@@ -35,6 +36,11 @@ urlpatterns = [
         "profile/picture/",
         ProfilePictureView.as_view(),
         name="profile-picture",
+    ),
+    path(
+        "profile/picture/<int:user_id>/",
+        ProfilePictureContentView.as_view(),
+        name="profile-picture-content",
     ),
     path(
         "change-password/",

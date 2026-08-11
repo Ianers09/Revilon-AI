@@ -30,6 +30,8 @@ class Profile(models.Model):
         blank=True,
         null=True,
     )
+    profile_picture_data = models.BinaryField(blank=True, null=True, editable=False)
+    profile_picture_content_type = models.CharField(max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

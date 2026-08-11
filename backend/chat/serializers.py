@@ -37,3 +37,7 @@ class SendMessageSerializer(serializers.Serializer):
         allow_null=True,
         min_value=1,
     )
+
+
+class RenameConversationSerializer(serializers.Serializer):
+    title = serializers.CharField(allow_blank=False, trim_whitespace=True, max_length=255)

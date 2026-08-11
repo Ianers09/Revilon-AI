@@ -10,6 +10,7 @@ from .serializers import (
     ConversationDetailSerializer,
     ConversationListSerializer,
     SendMessageSerializer,
+    RenameConversationSerializer,
 )
 from .services import (
     AIServiceError,
@@ -45,6 +46,14 @@ class ConversationDetailView(APIView):
         conversation = self.get_conversation(request, conversation_id)
         conversation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def patch(self, request, conversation_id):
+        conversation = self.get_conversation(request, conversation_id)
+        serializer = RenameConversationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        conversation.title = serializer.validated_data["title"]
+        conversation.save(update_fields=["title", "updated_at"])
+        return Response(ConversationListSerializer(conversation).data)
 
 
 class SendMessageView(APIView):

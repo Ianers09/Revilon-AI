@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
+import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -359,8 +360,11 @@ function App() {
   const [chatBusy, setChatBusy] = useState(false);
   const [chatError, setChatError] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [conversationMenuId, setConversationMenuId] = useState(null);
+  const [conversationMenu, setConversationMenu] = useState(null);
   const [deleteConversation, setDeleteConversation] = useState(null);
+  const [renameConversation, setRenameConversation] = useState(null);
+  const [renameTitle, setRenameTitle] = useState("");
+  const [renameBusy, setRenameBusy] = useState(false);
 
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -824,6 +828,40 @@ function App() {
     } catch (error) {
       setChatError(getErrorMessage(error, "Could not delete the conversation."));
       setDeleteConversation(null);
+    }
+  };
+
+  const toggleConversationMenu = (event, conversation) => {
+    if (conversationMenu?.id === conversation.id) {
+      setConversationMenu(null);
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    const menuHeight = 86;
+    const top = rect.bottom + menuHeight > window.innerHeight
+      ? rect.top - menuHeight - 4
+      : rect.bottom + 4;
+    setConversationMenu({ id: conversation.id, top, right: window.innerWidth - rect.right });
+  };
+
+  const submitRenameConversation = async (event) => {
+    event.preventDefault();
+    const title = renameTitle.trim();
+    if (!renameConversation || !title) return;
+    setRenameBusy(true);
+    try {
+      const response = await api.patch(`/chat/conversations/${renameConversation.id}/`, { title });
+      setConversations((current) => current.map((item) =>
+        item.id === response.data.id ? { ...item, ...response.data } : item
+      ));
+      if (activeConversation?.id === response.data.id) {
+        setActiveConversation((current) => ({ ...current, ...response.data }));
+      }
+      setRenameConversation(null);
+    } catch (error) {
+      setChatError(getErrorMessage(error, "Could not rename the conversation."));
+    } finally {
+      setRenameBusy(false);
     }
   };
 
@@ -1597,20 +1635,29 @@ function App() {
                 className="conversation-more"
                 type="button"
                 aria-label="Conversation options"
-                onClick={() => setConversationMenuId(conversationMenuId === conversation.id ? null : conversation.id)}
+                onClick={(event) => toggleConversationMenu(event, conversation)}
               >
                 <MoreHorizontal size={16} />
               </button>
-              {conversationMenuId === conversation.id && (
-                <div className="conversation-menu">
+              {conversationMenu?.id === conversation.id && createPortal(
+                <div className="conversation-menu" style={{ top: conversationMenu.top, right: conversationMenu.right }}>
+                  <button className="rename-action" type="button" onClick={() => {
+                    setRenameConversation(conversation);
+                    setRenameTitle(conversation.title);
+                    setConversationMenu(null);
+                  }}>
+                    <Edit3 size={15} />
+                    Rename
+                  </button>
                   <button type="button" onClick={() => {
                     setDeleteConversation(conversation);
-                    setConversationMenuId(null);
+                    setConversationMenu(null);
                   }}>
                     <Trash2 size={15} />
                     Delete
                   </button>
-                </div>
+                </div>,
+                document.body,
               )}
             </div>
           ))}
@@ -1740,6 +1787,24 @@ function App() {
               Delete
             </button>
           </div>
+        </Modal>
+      )}
+
+      {renameConversation && (
+        <Modal onClose={() => setRenameConversation(null)} className="confirm-modal">
+          <form onSubmit={submitRenameConversation}>
+            <h2>Rename conversation</h2>
+            <label className="field-label">
+              Name
+              <input autoFocus value={renameTitle} maxLength={255} onChange={(event) => setRenameTitle(event.target.value)} />
+            </label>
+            <div className="modal-actions">
+              <button className="button button-ghost" type="button" onClick={() => setRenameConversation(null)}>Cancel</button>
+              <button className="button button-light" type="submit" disabled={renameBusy || !renameTitle.trim()}>
+                {renameBusy ? "Saving..." : "Rename"}
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
 

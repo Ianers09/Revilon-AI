@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User, update_last_login
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -332,11 +333,11 @@ class ProfilePictureView(APIView):
 
         profile, _ = Profile.objects.get_or_create(user=request.user)
 
-        if profile.profile_picture:
-            profile.profile_picture.delete(save=False)
-
-        profile.profile_picture = picture
-        profile.save()
+        profile.profile_picture_data = picture.read()
+        profile.profile_picture_content_type = picture.content_type
+        profile.save(update_fields=[
+            "profile_picture_data", "profile_picture_content_type", "updated_at"
+        ])
 
         return Response(
             UserSerializer(
@@ -349,9 +350,11 @@ class ProfilePictureView(APIView):
     def delete(self, request):
         profile, _ = Profile.objects.get_or_create(user=request.user)
 
-        if profile.profile_picture:
+        if profile.profile_picture_data or profile.profile_picture:
             profile.profile_picture.delete(save=False)
             profile.profile_picture = None
+            profile.profile_picture_data = None
+            profile.profile_picture_content_type = ""
             profile.save()
 
         return Response(
@@ -361,6 +364,21 @@ class ProfilePictureView(APIView):
             ).data,
             status=status.HTTP_200_OK,
         )
+
+
+class ProfilePictureContentView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, user_id):
+        profile = get_object_or_404(Profile, user_id=user_id)
+        if not profile.profile_picture_data:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        response = HttpResponse(
+            bytes(profile.profile_picture_data),
+            content_type=profile.profile_picture_content_type or "image/jpeg",
+        )
+        response["Cache-Control"] = "no-store"
+        return response
 
 
 class ChangePasswordView(APIView):

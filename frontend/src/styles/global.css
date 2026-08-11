@@ -945,10 +945,8 @@ textarea:disabled {
 }
 
 .conversation-menu {
-  position: absolute;
-  z-index: 20;
-  top: 32px;
-  right: 5px;
+  position: fixed;
+  z-index: 100;
   width: 120px;
   padding: 5px;
   border: 1px solid #383838;
@@ -974,6 +972,14 @@ textarea:disabled {
 
 .conversation-menu button:hover {
   background: var(--danger-bg);
+}
+
+.conversation-menu .rename-action {
+  color: var(--text);
+}
+
+.conversation-menu .rename-action:hover {
+  background: #292929;
 }
 
 .sidebar-spacer,
