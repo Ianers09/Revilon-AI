@@ -31,7 +31,6 @@
   --danger-bg: rgba(214, 106, 106, 0.1);
   --success: #a4c4aa;
   --success-bg: rgba(116, 163, 125, 0.12);
-  --cursor-locked: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8.25' fill='%23111111' stroke='%23f0f0ed' stroke-width='1.35'/%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%23000000' stroke-opacity='.32'/%3E%3Cpath d='M6.9 17.1 17.1 6.9' fill='none' stroke='%23f0f0ed' stroke-width='1.55' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, not-allowed;
 }
 
 * {
@@ -655,7 +654,7 @@ textarea:disabled {
 }
 
 .admin-user-modal .form-stack input[readonly] {
-  cursor: var(--cursor-locked);
+  cursor: not-allowed;
   color: #b7b7b3;
   border-color: #303030;
   background: #111;
@@ -1764,7 +1763,7 @@ textarea:disabled {
 
 .chat-composer:has(textarea:disabled),
 .chat-composer textarea:disabled {
-  cursor: var(--cursor-locked);
+  cursor: not-allowed;
 }
 
 .chat-composer:has(textarea:disabled) > button {
@@ -2278,7 +2277,7 @@ textarea:disabled {
 }
 
 .toggle-row input:disabled {
-  cursor: var(--cursor-locked);
+  cursor: not-allowed;
   opacity: 0.45;
 }
 
