@@ -4,7 +4,6 @@ from django.test import TestCase
 from .models import Conversation, Message
 from .services import (
     _conversation_messages,
-    _explicitly_asks_middle_name,
     generate_ai_response,
     remove_emojis,
 )
@@ -30,32 +29,12 @@ class RevilonIdentityTests(TestCase):
         self.assertEqual(system_message["role"], "system")
         self.assertIn("Ian Oliver M. Mingoy", system_message["content"])
         self.assertIn("created", system_message["content"])
-        self.assertIn(
-            "Bachelor of Science in Information Technology student at Cebu Institute",
-            system_message["content"],
-        )
-        self.assertIn("of Technology – University (CIT-U)", system_message["content"])
-        self.assertIn("Never identify the\ninstitution only as CIT", system_message["content"])
-        self.assertIn("full-stack developer", system_message["content"])
+        self.assertIn("Founder and Full-Stack Developer, Revilon AI", system_message["content"])
+        self.assertIn("Bachelor of Science in Information Technology Student", system_message["content"])
+        self.assertIn("Cebu Institute of Technology – University", system_message["content"])
+        self.assertIn("Cebu, Philippines", system_message["content"])
+        self.assertIn("React, JavaScript, Python, Django REST Framework", system_message["content"])
         self.assertIn("Do not\ninvent, assume, or embellish", system_message["content"])
-
-    def test_middle_name_is_known_but_initial_is_default(self):
-        user = get_user_model().objects.create_user(
-            username="private-identity-test",
-            email="private-identity@example.com",
-            password="test-password",
-        )
-        conversation = Conversation.objects.create(user=user)
-
-        system_content = _conversation_messages(conversation)[0]["content"]
-
-        self.assertIn('middle name is "Manugas"', system_content)
-        self.assertIn('first name is "Ian Oliver"', system_content)
-        self.assertIn('last name is "Mingoy"', system_content)
-        self.assertIn("Always refer to him as Ian Oliver M. Mingoy", system_content)
-        self.assertIn('answer exactly: "His middle name is Manugas."', system_content)
-        self.assertIn('Do not use the phrase "stands for"', system_content)
-        self.assertIn('bare reference to "Ian"', system_content)
 
     def test_creator_question_has_consistent_response(self):
         user = get_user_model().objects.create_user(
@@ -134,92 +113,4 @@ class RevilonIdentityTests(TestCase):
         self.assertEqual(
             generate_ai_response(conversation),
             "I still need a last name or specific context to identify which Ian you mean.",
-        )
-
-    def test_middle_name_requires_an_explicit_question(self):
-        self.assertFalse(_explicitly_asks_middle_name("Tell me everything about Ian Mingoy"))
-        self.assertFalse(_explicitly_asks_middle_name("Give me his official profile"))
-        self.assertTrue(_explicitly_asks_middle_name("What is his middle name?"))
-        self.assertTrue(_explicitly_asks_middle_name("What is his mn?"))
-        self.assertTrue(_explicitly_asks_middle_name("mn?"))
-        self.assertTrue(_explicitly_asks_middle_name("middlename"))
-        self.assertTrue(_explicitly_asks_middle_name("ians middlename"))
-        self.assertTrue(_explicitly_asks_middle_name("Ian's middle name"))
-        self.assertTrue(_explicitly_asks_middle_name("What does M. stand for?"))
-
-    def test_fresh_ian_middle_name_question_identifies_the_creator(self):
-        user = get_user_model().objects.create_user(
-            username="fresh-middle-name-test",
-            email="fresh-middle-name@example.com",
-            password="test-password",
-        )
-        conversation = Conversation.objects.create(user=user)
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.USER,
-            content="ians middlename",
-        )
-
-        self.assertEqual(
-            generate_ai_response(conversation),
-            "If you mean Ian Oliver M. Mingoy, the creator of Revilon AI, "
-            "his middle name is Manugas.",
-        )
-
-    def test_middle_name_abbreviation_and_follow_up_are_understood(self):
-        user = get_user_model().objects.create_user(
-            username="middle-abbreviation-test",
-            email="middle-abbreviation@example.com",
-            password="test-password",
-        )
-        conversation = Conversation.objects.create(user=user)
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.ASSISTANT,
-            content="Ian Oliver M. Mingoy is the founder of Revilon AI.",
-        )
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.USER,
-            content="mn?",
-        )
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.ASSISTANT,
-            content="M.",
-        )
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.USER,
-            content="What is it?",
-        )
-
-        self.assertEqual(generate_ai_response(conversation), "His middle name is Manugas.")
-
-    def test_middle_initial_follow_up_has_consistent_response(self):
-        user = get_user_model().objects.create_user(
-            username="middle-response-test",
-            email="middle-response@example.com",
-            password="test-password",
-        )
-        conversation = Conversation.objects.create(user=user)
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.USER,
-            content="Who created this AI?",
-        )
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.ASSISTANT,
-            content="Revilon AI was created by Ian Oliver M. Mingoy.",
-        )
-        Message.objects.create(
-            conversation=conversation,
-            role=Message.Role.USER,
-            content="What is M.?",
-        )
-
-        self.assertEqual(
-            generate_ai_response(conversation),
-            "His middle name is Manugas.",
         )

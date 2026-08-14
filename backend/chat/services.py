@@ -34,18 +34,20 @@ clearly identifies Revilon AI's creator, use the official profile below.
 Descriptions such as "the one and only", "that Ian", or "you know who" do not
 identify a person and must not be treated as creator context.
 
-Ian Oliver M. Mingoy is the founder and full-stack developer of Revilon AI. He
-is a Bachelor of Science in Information Technology student at Cebu Institute
-of Technology – University (CIT-U) in Cebu City, Philippines. When discussing
-his education or the institution, always use the full official name, Cebu
-Institute of Technology – University, on first reference. Never identify the
-institution only as CIT. The abbreviation CIT-U may be used after the full name.
-His technical skills include React, JavaScript, Python, Django REST Framework,
-PostgreSQL, Supabase, REST APIs, Git, and AI model integration. He develops
-Revilon AI's user interface, authentication system, database, conversation
-management, backend APIs, and AI integration. Revilon AI is an AI-powered
-workspace designed for learning, writing, research, programming assistance,
-and problem-solving.
+Ian Oliver M. Mingoy
+Founder and Full-Stack Developer, Revilon AI
+Bachelor of Science in Information Technology Student
+Cebu Institute of Technology – University
+Cebu, Philippines
+
+Technical Skills:
+React, JavaScript, Python, Django REST Framework, PostgreSQL, Supabase, REST
+APIs, Git, and AI model integration.
+
+Ian is the founder and developer of Revilon AI, an AI-powered workspace
+designed for learning, writing, research, programming assistance, and
+problem-solving. He develops the platform's user interface, authentication
+system, database, conversation management, backend APIs, and AI integration.
 
 """.strip()
 
@@ -64,33 +66,7 @@ def remove_emojis(value):
 
 
 def _system_instructions():
-    return SYSTEM_INSTRUCTIONS + (
-        '\n\nThe creator\'s given or first name is "Ian Oliver", his middle '
-        'name is "Manugas", and his last name is "Mingoy". Always refer to '
-        "him as "
-        "Ian Oliver M. Mingoy "
-        "unless a user explicitly asks for his middle name or the meaning of "
-        '"M.". In that case, answer exactly: "His middle name is Manugas." '
-        'Do not use the phrase "stands for". Never volunteer '
-        "or expand the middle name in a profile, biography, list, summary, or "
-        'a request such as "tell me everything".'
-    )
-
-
-def _explicitly_asks_middle_name(value):
-    question = re.sub(r"[^a-z0-9.]+", " ", value.lower()).strip()
-    return any(
-        re.search(pattern, question)
-        for pattern in (
-            r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian(?:\s+s|s)|his)\s+)?middle\s*name\b",
-            r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian\s+s|his)\s+)?mn\b",
-            r"\bian(?:\s+s|s)\s+middle\s*name\b",
-            r"\bian(?:\s+s|s)\s+mn\b",
-            r"^(?:mn|middle\s*name)$",
-            r"\bwhat\s+does\s+(?:the\s+)?m\.?\s+stand\s+for\b",
-            r"\bwhat(?:\s+is|'s)\s+(?:the\s+)?m\.?\b",
-        )
-    )
+    return SYSTEM_INSTRUCTIONS
 
 
 class AIServiceError(Exception):
@@ -145,15 +121,6 @@ def _creator_identity_response(conversation):
         (message for message in recent_messages if message.role == "user"),
         None,
     )
-    previous_user_message = next(
-        (
-            message
-            for message in recent_messages
-            if message.role == "user" and message.id != getattr(latest_user_message, "id", None)
-        ),
-        None,
-    )
-
     if latest_user_message is None:
         return None
 
@@ -191,12 +158,6 @@ def _creator_identity_response(conversation):
     if asks_creator and identifies_revilon:
         return "Revilon AI was created by Ian Oliver M. Mingoy."
 
-    asks_middle_name = _explicitly_asks_middle_name(latest_user_message.content)
-    follows_middle_name_question = (
-        previous_user_message
-        and _explicitly_asks_middle_name(previous_user_message.content)
-        and question in ("what is it", "what s it", "tell me", "say it")
-    )
     creator_context = any(
         phrase in context
         for phrase in ("ian oliver", "mingoy", "created revilon", "created this ai")
@@ -208,15 +169,6 @@ def _creator_identity_response(conversation):
     )
     if asks_first_name and creator_context:
         return "His first name is Ian Oliver."
-
-    if asks_middle_name and re.search(r"\bian(?:\s|s|$)", question):
-        return (
-            "If you mean Ian Oliver M. Mingoy, the creator of Revilon AI, "
-            "his middle name is Manugas."
-        )
-
-    if (asks_middle_name or follows_middle_name_question) and creator_context:
-        return "His middle name is Manugas."
 
     return None
 
@@ -295,9 +247,5 @@ def generate_ai_response(conversation):
         raise AIServiceError(
             "Ollama returned an empty response. Please try the message again."
         )
-
-    latest_user_message = conversation.messages.filter(role="user").order_by("-created_at").first()
-    if latest_user_message and not _explicitly_asks_middle_name(latest_user_message.content):
-        answer = re.sub(r"\bManugas\b", "M.", answer, flags=re.IGNORECASE)
 
     return answer
