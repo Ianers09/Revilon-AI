@@ -654,7 +654,7 @@ textarea:disabled {
 }
 
 .admin-user-modal .form-stack input[readonly] {
-  cursor: not-allowed;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Ccircle cx='11' cy='11' r='8.25' fill='%23141414' stroke='%23d8d8d5' stroke-width='1.5'/%3E%3Cpath d='M5.8 16.2 16.2 5.8' fill='none' stroke='%23d8d8d5' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") 11 11, not-allowed;
   color: #b7b7b3;
   border-color: #303030;
   background: #111;
@@ -2268,7 +2268,7 @@ textarea:disabled {
 }
 
 .toggle-row input:disabled {
-  cursor: not-allowed;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Ccircle cx='11' cy='11' r='8.25' fill='%23141414' stroke='%23d8d8d5' stroke-width='1.5'/%3E%3Cpath d='M5.8 16.2 16.2 5.8' fill='none' stroke='%23d8d8d5' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") 11 11, not-allowed;
   opacity: 0.45;
 }
 
