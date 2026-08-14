@@ -26,14 +26,15 @@ class ProductionDomainSettingsTests(SimpleTestCase):
 
 
 class SearchEngineEndpointsTests(SimpleTestCase):
-    def test_about_page_contains_public_creator_identity(self):
-        response = self.client.get(reverse("about"))
-        content = response.content.decode()
+    def test_retired_about_page_redirects_home(self):
+        response = self.client.get(reverse("retired-about"))
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Ian Oliver M. Mingoy", content)
-        self.assertIn("Founder and Full-Stack Developer", content)
-        self.assertNotIn("PrivateMiddleName", content)
+        self.assertRedirects(
+            response,
+            "/",
+            status_code=301,
+            fetch_redirect_response=False,
+        )
 
     def test_robots_txt_references_sitemap(self):
         response = self.client.get(reverse("robots-txt"))
@@ -50,4 +51,4 @@ class SearchEngineEndpointsTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("https://revilonai.com/", content)
-        self.assertIn("https://revilonai.com/about/", content)
+        self.assertNotIn("/about/", content)

@@ -286,18 +286,6 @@ textarea:disabled {
   gap: 10px;
 }
 
-.landing-about-link {
-  color: var(--text-soft);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 10px 8px;
-  text-decoration: none;
-}
-
-.landing-about-link:hover {
-  color: var(--text-highlight);
-}
-
 .landing-header {
   animation: landing-header-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
