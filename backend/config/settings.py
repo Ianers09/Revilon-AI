@@ -29,6 +29,10 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+for production_host in ("revilonai.com", "www.revilonai.com"):
+    if production_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(production_host)
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -189,6 +193,15 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+PRODUCTION_ORIGINS = (
+    "https://revilonai.com",
+    "https://www.revilonai.com",
+)
+
+for production_origin in PRODUCTION_ORIGINS:
+    if production_origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(production_origin)
+
 CORS_ALLOW_CREDENTIALS = True
 
 
@@ -204,6 +217,10 @@ CSRF_TRUSTED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
+
+for production_origin in PRODUCTION_ORIGINS:
+    if production_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(production_origin)
 
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
