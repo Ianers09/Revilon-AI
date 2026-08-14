@@ -26,9 +26,11 @@ class RevilonIdentityTests(TestCase):
         self.assertIn("Ian Oliver M. Mingoy", system_message["content"])
         self.assertIn("created", system_message["content"])
         self.assertIn(
-            "Bachelor of Science in Information Technology student at CIT",
+            "Bachelor of Science in Information Technology student at Cebu Institute",
             system_message["content"],
         )
+        self.assertIn("of Technology – University (CIT-U)", system_message["content"])
+        self.assertIn("Never identify the\ninstitution only as CIT", system_message["content"])
         self.assertIn("full-stack developer", system_message["content"])
         self.assertIn("Do not\ninvent, assume, or embellish", system_message["content"])
 
