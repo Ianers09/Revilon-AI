@@ -82,6 +82,7 @@ def _explicitly_asks_middle_name(value):
         re.search(pattern, question)
         for pattern in (
             r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian\s+s|his)\s+)?middle\s*name\b",
+            r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian\s+s|his)\s+)?mn\b",
             r"\bwhat\s+does\s+(?:the\s+)?m\.?\s+stand\s+for\b",
             r"\bwhat(?:\s+is|'s)\s+(?:the\s+)?m\.?\b",
         )
@@ -140,6 +141,14 @@ def _creator_identity_response(conversation):
         (message for message in recent_messages if message.role == "user"),
         None,
     )
+    previous_user_message = next(
+        (
+            message
+            for message in recent_messages
+            if message.role == "user" and message.id != getattr(latest_user_message, "id", None)
+        ),
+        None,
+    )
 
     if latest_user_message is None:
         return None
@@ -179,6 +188,11 @@ def _creator_identity_response(conversation):
         return "Revilon AI was created by Ian Oliver M. Mingoy."
 
     asks_middle_name = _explicitly_asks_middle_name(latest_user_message.content)
+    follows_middle_name_question = (
+        previous_user_message
+        and _explicitly_asks_middle_name(previous_user_message.content)
+        and question in ("what is it", "what s it", "tell me", "say it")
+    )
     creator_context = any(
         phrase in context
         for phrase in ("ian oliver", "mingoy", "created revilon", "created this ai")
@@ -191,8 +205,8 @@ def _creator_identity_response(conversation):
     if asks_first_name and creator_context:
         return "His first name is Ian Oliver."
 
-    if asks_middle_name and creator_context:
-        return "The “M.” in Ian Oliver M. Mingoy stands for Manugas."
+    if (asks_middle_name or follows_middle_name_question) and creator_context:
+        return "Manugas."
 
     return None
 
