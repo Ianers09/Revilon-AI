@@ -48,6 +48,7 @@ def false_value(value):
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "register"
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -81,6 +82,7 @@ class RegisterView(APIView):
 
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "verify_email"
 
     def post(self, request):
         serializer = EmailVerificationSerializer(data=request.data)
@@ -166,6 +168,7 @@ class VerifyEmailView(APIView):
 
 class ResendVerificationView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "resend_verification"
 
     def post(self, request):
         serializer = ResendVerificationSerializer(data=request.data)
@@ -209,6 +212,7 @@ class ResendVerificationView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "login"
 
     def post(self, request):
         username = str(request.data.get("username", "")).strip()
@@ -343,6 +347,7 @@ class ProfileView(APIView):
 class ProfilePictureView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+    throttle_scope = "profile_picture"
 
     def post(self, request):
         serializer = ProfilePictureSerializer(data=request.data)
@@ -396,11 +401,14 @@ class ProfilePictureContentView(APIView):
             content_type=profile.profile_picture_content_type or "image/jpeg",
         )
         response["Cache-Control"] = "no-store"
+        response["Content-Disposition"] = 'inline; filename="profile-image"'
+        response["X-Content-Type-Options"] = "nosniff"
         return response
 
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = "password_change"
 
     def post(self, request):
         serializer = ChangePasswordSerializer(

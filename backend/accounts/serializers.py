@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from PIL import Image, UnidentifiedImageError
 from rest_framework import serializers
 
 from .models import Profile
@@ -198,6 +199,32 @@ class ProfilePictureSerializer(serializers.Serializer):
         if image.size > 5 * 1024 * 1024:
             raise serializers.ValidationError(
                 "Profile pictures must be 5 MB or smaller."
+            )
+
+        try:
+            parsed_image = Image.open(image)
+            width, height = parsed_image.size
+            image_format = parsed_image.format
+            parsed_image.verify()
+        except (UnidentifiedImageError, OSError, ValueError):
+            raise serializers.ValidationError(
+                "The uploaded file is not a valid image."
+            )
+        finally:
+            image.seek(0)
+
+        expected_formats = {
+            "image/jpeg": "JPEG",
+            "image/png": "PNG",
+            "image/webp": "WEBP",
+        }
+        if image_format != expected_formats[content_type]:
+            raise serializers.ValidationError(
+                "The image content does not match its file type."
+            )
+        if width > 4096 or height > 4096:
+            raise serializers.ValidationError(
+                "Profile pictures cannot exceed 4096 by 4096 pixels."
             )
 
         return image

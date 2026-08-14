@@ -16,6 +16,10 @@ from .views import (
 )
 
 
+class ThrottledTokenRefreshView(TokenRefreshView):
+    throttle_scope = "token_refresh"
+
+
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path(
@@ -29,7 +33,11 @@ urlpatterns = [
         name="resend-verification",
     ),
     path("login/", LoginView.as_view(), name="login"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path(
+        "token/refresh/",
+        ThrottledTokenRefreshView.as_view(),
+        name="token-refresh",
+    ),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("profile/", ProfileView.as_view(), name="profile"),
     path(

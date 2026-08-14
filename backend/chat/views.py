@@ -58,6 +58,7 @@ class ConversationDetailView(APIView):
 
 class SendMessageView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = "ai_message"
 
     def post(self, request):
         input_serializer = SendMessageSerializer(data=request.data)
