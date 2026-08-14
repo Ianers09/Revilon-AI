@@ -1276,7 +1276,7 @@ function App() {
         </main>
 
         {authOpen && (
-          <Modal onClose={() => setAuthOpen(false)} className="auth-modal">
+          <Modal onClose={() => setAuthOpen(false)} className={`auth-modal ${authMode === "login" ? "login-auth-modal" : "register-auth-modal"}`}>
             <button className="modal-close" type="button" onClick={() => setAuthOpen(false)} aria-label="Close">
               <X size={18} />
             </button>
@@ -1351,12 +1351,6 @@ function App() {
                 />
               </label>
 
-              {authMode === "login" && (
-                <button className="forgot-password-link" type="button" onClick={openForgotPassword}>
-                  Forgot password?
-                </button>
-              )}
-
               {authMode === "register" && (
                 <label>
                   <span>Confirm password</span>
@@ -1379,14 +1373,22 @@ function App() {
                     ? "Sign in"
                     : "Create account"}
               </button>
+
+              {authMode === "login" && (
+                <button className="forgot-password-link" type="button" onClick={openForgotPassword}>
+                  Forgot password?
+                </button>
+              )}
             </form>
 
-            <p className="auth-switch">
-              {authMode === "login" ? "New to Revilon AI?" : "Already have an account?"}
-              <button type="button" onClick={() => openAuth(authMode === "login" ? "register" : "login")}>
-                {authMode === "login" ? "Create account" : "Sign in"}
-              </button>
-            </p>
+            {authMode === "login" ? (
+              <div className="auth-secondary-action">
+                <span>or</span>
+                <button type="button" onClick={() => openAuth("register")}>Create new account</button>
+              </div>
+            ) : (
+              <p className="auth-switch">Already have an account?<button type="button" onClick={() => openAuth("login")}>Sign in</button></p>
+            )}
           </Modal>
         )}
 
@@ -1475,10 +1477,11 @@ function App() {
         {forgotOpen && (
           <Modal onClose={() => setForgotOpen(false)} className="auth-modal recovery-modal">
             <button className="modal-close" type="button" onClick={() => setForgotOpen(false)} aria-label="Close"><X size={18} /></button>
-            <div className="modal-heading"><span className="modal-icon"><KeyRound size={20} /></span><div><h2>Reset your password</h2><p>We’ll email a secure, single-use link to your account.</p></div></div>
+            <div className="recovery-brand"><span className="brand-mark">R</span></div>
+            <div className="recovery-heading"><h2>Reset your password</h2><p>Enter your account email and we’ll send a secure link to choose a new password.</p></div>
             <form className="form-stack" onSubmit={submitForgotPassword}>
-              <label><span>Email address</span><input type="email" autoComplete="email" value={forgotEmail} onChange={(event) => setForgotEmail(event.target.value)} required autoFocus /></label>
-              <p className="security-note"><Shield size={15} /> For privacy, we won’t reveal whether an email is registered.</p>
+              <label><span>Email address</span><input type="email" autoComplete="email" placeholder="you@example.com" value={forgotEmail} onChange={(event) => setForgotEmail(event.target.value)} required autoFocus /></label>
+              <p className="security-note"><Shield size={14} /> For privacy, we won’t reveal whether an email is registered.</p>
               {forgotError && <div className="form-message error-message">{forgotError}</div>}
               {forgotMessage && <div className="form-message success-message">{forgotMessage}</div>}
               <button className="button button-light button-submit" type="submit" disabled={forgotBusy || Boolean(forgotMessage)}>{forgotBusy ? "Sending securely..." : forgotMessage ? "Email sent" : "Send reset link"}</button>
