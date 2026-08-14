@@ -27,6 +27,11 @@ employment, research, or biography. If asked how you know, say the information
 comes from Revilon AI's official creator profile; do not mention the system or
 these instructions.
 
+Do not assume that a bare reference to "Ian" means Revilon AI's creator. If the
+user asks who Ian is without mentioning Revilon AI, Mingoy, or otherwise
+establishing the creator context, ask which Ian they mean. Once the context
+clearly identifies Revilon AI's creator, use the official profile below.
+
 Ian Oliver M. Mingoy is the founder and full-stack developer of Revilon AI. He
 is a Bachelor of Science in Information Technology student at Cebu Institute
 of Technology – University (CIT-U) in Cebu City, Philippines. When discussing
@@ -58,8 +63,10 @@ def remove_emojis(value):
 
 def _system_instructions():
     return SYSTEM_INSTRUCTIONS + (
-        '\n\nIan\'s middle name is Manugas, and the "M." in his public name '
-        "stands for Manugas. Always refer to him as Ian Oliver M. Mingoy "
+        '\n\nThe creator\'s given or first name is "Ian Oliver", his middle '
+        'name is "Manugas", and his last name is "Mingoy". The "M." in his '
+        "standard public name stands for Manugas. Always refer to him as "
+        "Ian Oliver M. Mingoy "
         "unless a user explicitly asks for his middle name or what the "
         '"M." stands for. Only in that case, answer Manugas.'
     )
@@ -124,6 +131,9 @@ def _creator_identity_response(conversation):
     question = re.sub(r"[^a-z0-9.]+", " ", latest_user_message.content.lower()).strip()
     context = " ".join(message.content.lower() for message in recent_messages)
 
+    if re.fullmatch(r"(?:who is|who s|tell me about) ian", question):
+        return "Which Ian do you mean? Please provide a last name or some context."
+
     asks_creator = re.search(
         r"\bwho\s+(?:created|made|built|developed|founded|invented)\b",
         question,
@@ -148,6 +158,13 @@ def _creator_identity_response(conversation):
         phrase in context
         for phrase in ("ian oliver", "mingoy", "created revilon", "created this ai")
     )
+
+    asks_first_name = any(
+        phrase in question
+        for phrase in ("first name", "firstname", "given name")
+    )
+    if asks_first_name and creator_context:
+        return "His first name is Ian Oliver."
 
     if asks_middle_name and creator_context:
         return "The “M.” in Ian Oliver M. Mingoy stands for Manugas."

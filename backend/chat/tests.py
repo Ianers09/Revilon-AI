@@ -44,9 +44,12 @@ class RevilonIdentityTests(TestCase):
 
         system_content = _conversation_messages(conversation)[0]["content"]
 
-        self.assertIn("middle name is Manugas", system_content)
+        self.assertIn('middle name is "Manugas"', system_content)
+        self.assertIn('first name is "Ian Oliver"', system_content)
+        self.assertIn('last name is "Mingoy"', system_content)
         self.assertIn("Always refer to him as Ian Oliver M. Mingoy", system_content)
         self.assertIn("Only in that case, answer Manugas", system_content)
+        self.assertIn('bare reference to "Ian"', system_content)
 
     def test_creator_question_has_consistent_response(self):
         user = get_user_model().objects.create_user(
@@ -65,6 +68,44 @@ class RevilonIdentityTests(TestCase):
             generate_ai_response(conversation),
             "Revilon AI was created by Ian Oliver M. Mingoy.",
         )
+
+    def test_bare_ian_question_requests_clarification(self):
+        user = get_user_model().objects.create_user(
+            username="ambiguous-ian-test",
+            email="ambiguous-ian@example.com",
+            password="test-password",
+        )
+        conversation = Conversation.objects.create(user=user)
+        Message.objects.create(
+            conversation=conversation,
+            role=Message.Role.USER,
+            content="Who is Ian?",
+        )
+
+        self.assertEqual(
+            generate_ai_response(conversation),
+            "Which Ian do you mean? Please provide a last name or some context.",
+        )
+
+    def test_creator_first_name_includes_both_given_names(self):
+        user = get_user_model().objects.create_user(
+            username="creator-first-name-test",
+            email="creator-first-name@example.com",
+            password="test-password",
+        )
+        conversation = Conversation.objects.create(user=user)
+        Message.objects.create(
+            conversation=conversation,
+            role=Message.Role.ASSISTANT,
+            content="Revilon AI was created by Ian Oliver M. Mingoy.",
+        )
+        Message.objects.create(
+            conversation=conversation,
+            role=Message.Role.USER,
+            content="What is his first name?",
+        )
+
+        self.assertEqual(generate_ai_response(conversation), "His first name is Ian Oliver.")
 
     def test_middle_initial_follow_up_has_consistent_response(self):
         user = get_user_model().objects.create_user(
