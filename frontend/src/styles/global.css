@@ -298,19 +298,48 @@ textarea:disabled {
   color: var(--text-highlight);
 }
 
-.landing-creator-note {
-  color: #777;
-  font-size: 12px;
-  margin-top: 12px;
+.landing-header {
+  animation: landing-header-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.landing-creator-note a {
-  color: #aaa;
-  text-decoration: none;
+.landing-content > * {
+  animation: landing-content-in 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.landing-creator-note a:hover {
-  color: #eee;
+.landing-content > :nth-child(2) { animation-delay: 60ms; }
+.landing-content > :nth-child(3) { animation-delay: 110ms; }
+.landing-content > :nth-child(4) { animation-delay: 160ms; }
+.landing-content > :nth-child(5) { animation-delay: 210ms; }
+
+.landing-composer {
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.landing-composer:focus-within {
+  border-color: #555;
+  box-shadow: 0 18px 60px rgb(0 0 0 / 38%);
+  transform: translateY(-2px);
+}
+
+@keyframes landing-header-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-content-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-header,
+  .landing-content > * {
+    animation: none;
+  }
+
+  .landing-composer {
+    transition: none;
+  }
 }
 
 .landing-sign-in,

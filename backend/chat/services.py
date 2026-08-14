@@ -91,7 +91,57 @@ def _conversation_messages(conversation):
     return messages
 
 
+def _creator_identity_response(conversation):
+    recent_messages = list(
+        conversation.messages.order_by("-created_at")[:8]
+    )
+    latest_user_message = next(
+        (message for message in recent_messages if message.role == "user"),
+        None,
+    )
+
+    if latest_user_message is None:
+        return None
+
+    question = re.sub(r"[^a-z0-9.]+", " ", latest_user_message.content.lower()).strip()
+    context = " ".join(message.content.lower() for message in recent_messages)
+
+    asks_creator = re.search(
+        r"\bwho\s+(?:created|made|built|developed|founded|invented)\b",
+        question,
+    )
+    identifies_revilon = any(
+        phrase in question
+        for phrase in ("revilon", "this ai", "this assistant", "you")
+    )
+
+    if asks_creator and identifies_revilon:
+        return "Revilon AI was created by Ian Oliver M. Mingoy."
+
+    asks_middle_name = any(
+        re.search(pattern, question)
+        for pattern in (
+            r"\bwhat(?:\s+is|'s)\s+(?:ian(?:'s)?\s+)?middle\s+name\b",
+            r"\bwhat\s+does\s+(?:the\s+)?m\.?\s+stand\s+for\b",
+            r"\bwhat(?:\s+is|'s)\s+(?:the\s+)?m\.?\b",
+        )
+    )
+    creator_context = any(
+        phrase in context
+        for phrase in ("ian oliver", "mingoy", "created revilon", "created this ai")
+    )
+
+    if asks_middle_name and creator_context:
+        return "The “M.” in Ian Oliver M. Mingoy stands for Manugas."
+
+    return None
+
+
 def generate_ai_response(conversation):
+    identity_response = _creator_identity_response(conversation)
+    if identity_response:
+        return identity_response
+
     base_url = settings.OLLAMA_BASE_URL.strip().rstrip("/")
     model = settings.OLLAMA_MODEL.strip() or "llama3.2:3b"
 

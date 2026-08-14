@@ -1164,9 +1164,6 @@ function App() {
             <p className="landing-small-note">
               Sign in to save conversations and continue your work.
             </p>
-            <p className="landing-creator-note">
-              Created by <a href="/about/">Ian Oliver M. Mingoy</a>
-            </p>
           </div>
         </main>
 
