@@ -26,15 +26,9 @@ class ProductionDomainSettingsTests(SimpleTestCase):
 
 
 class SearchEngineEndpointsTests(SimpleTestCase):
-    def test_retired_about_page_redirects_home(self):
-        response = self.client.get(reverse("retired-about"))
-
-        self.assertRedirects(
-            response,
-            "/",
-            status_code=301,
-            fetch_redirect_response=False,
-        )
+    def test_removed_about_urls_return_not_found(self):
+        self.assertEqual(self.client.get("/about/").status_code, 404)
+        self.assertEqual(self.client.get("/aboutus/").status_code, 404)
 
     def test_robots_txt_references_sitemap(self):
         response = self.client.get(reverse("robots-txt"))

@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.urls import include, path, re_path
 from django.views.static import serve
-from django.views.generic import RedirectView
 
 
 def react_app(request):
@@ -53,11 +52,6 @@ def sitemap_xml(request):
 
 urlpatterns = [
     path("health/", health_check, name="health-check"),
-    path(
-        "about/",
-        RedirectView.as_view(url="/", permanent=True),
-        name="retired-about",
-    ),
     path("robots.txt", robots_txt, name="robots-txt"),
     path("sitemap.xml", sitemap_xml, name="sitemap-xml"),
     path("admin/", admin.site.urls),
@@ -82,9 +76,6 @@ else:
 
 
 urlpatterns += [
-    re_path(
-        r"^(?!api/|admin/|media/|static/).*$",
-        react_app,
-        name="react-app",
-    )
+    path("", react_app, name="react-app"),
+    path("admin", react_app, name="react-admin-app"),
 ]
