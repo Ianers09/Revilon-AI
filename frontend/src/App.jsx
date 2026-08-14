@@ -35,8 +35,8 @@ const API_BASE_URL =
   (import.meta.env.DEV ? "http://127.0.0.1:8000/api" : "/api");
 
 // Keep this aligned with SendMessageSerializer.content in the backend.
-const CHAT_MESSAGE_MAX_LENGTH = 100000;
-const CHAT_MESSAGE_COUNTER_THRESHOLD = 75000;
+const CHAT_MESSAGE_MAX_LENGTH = 50000;
+const CHAT_MESSAGE_COUNTER_THRESHOLD = 40000;
 
 const remainingMessageCharacters = (message) =>
   (CHAT_MESSAGE_MAX_LENGTH - message.length).toLocaleString();

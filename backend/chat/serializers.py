@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from .models import Conversation, Message
 
-MAX_MESSAGE_LENGTH = 100000
+MAX_MESSAGE_LENGTH = 50000
 
 
 class MessageSerializer(serializers.ModelSerializer):
