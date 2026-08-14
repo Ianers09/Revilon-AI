@@ -81,8 +81,10 @@ def _explicitly_asks_middle_name(value):
     return any(
         re.search(pattern, question)
         for pattern in (
-            r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian\s+s|his)\s+)?middle\s*name\b",
+            r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian(?:\s+s|s)|his)\s+)?middle\s*name\b",
             r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian\s+s|his)\s+)?mn\b",
+            r"\bian(?:\s+s|s)\s+middle\s*name\b",
+            r"\bian(?:\s+s|s)\s+mn\b",
             r"\bwhat\s+does\s+(?:the\s+)?m\.?\s+stand\s+for\b",
             r"\bwhat(?:\s+is|'s)\s+(?:the\s+)?m\.?\b",
         )
@@ -204,6 +206,12 @@ def _creator_identity_response(conversation):
     )
     if asks_first_name and creator_context:
         return "His first name is Ian Oliver."
+
+    if asks_middle_name and re.search(r"\bian(?:\s|s|$)", question):
+        return (
+            "If you mean Ian Oliver M. Mingoy, the creator of Revilon AI, "
+            "his middle name is Manugas."
+        )
 
     if (asks_middle_name or follows_middle_name_question) and creator_context:
         return "Manugas."

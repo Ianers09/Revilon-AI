@@ -140,7 +140,28 @@ class RevilonIdentityTests(TestCase):
         self.assertFalse(_explicitly_asks_middle_name("Give me his official profile"))
         self.assertTrue(_explicitly_asks_middle_name("What is his middle name?"))
         self.assertTrue(_explicitly_asks_middle_name("What is his mn?"))
+        self.assertTrue(_explicitly_asks_middle_name("ians middlename"))
+        self.assertTrue(_explicitly_asks_middle_name("Ian's middle name"))
         self.assertTrue(_explicitly_asks_middle_name("What does M. stand for?"))
+
+    def test_fresh_ian_middle_name_question_identifies_the_creator(self):
+        user = get_user_model().objects.create_user(
+            username="fresh-middle-name-test",
+            email="fresh-middle-name@example.com",
+            password="test-password",
+        )
+        conversation = Conversation.objects.create(user=user)
+        Message.objects.create(
+            conversation=conversation,
+            role=Message.Role.USER,
+            content="ians middlename",
+        )
+
+        self.assertEqual(
+            generate_ai_response(conversation),
+            "If you mean Ian Oliver M. Mingoy, the creator of Revilon AI, "
+            "his middle name is Manugas.",
+        )
 
     def test_middle_name_abbreviation_and_follow_up_are_understood(self):
         user = get_user_model().objects.create_user(
