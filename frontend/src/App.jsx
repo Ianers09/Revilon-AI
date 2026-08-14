@@ -101,13 +101,22 @@ api.interceptors.response.use(
 
 function getErrorMessage(error, fallback = "Something went wrong. Please try again.") {
   const data = error?.response?.data;
+  const status = error?.response?.status;
+  const contentType = String(error?.response?.headers?.["content-type"] || "");
+
+  if (status >= 500) {
+    return "Revilon AI is temporarily unavailable. Please wait a moment and try again.";
+  }
 
   if (!data) {
-    return error?.message || fallback;
+    return error?.code === "ECONNABORTED"
+      ? "The request took too long. Please try again."
+      : fallback;
   }
 
   if (typeof data === "string") {
-    return data;
+    const looksLikeHtml = contentType.includes("text/html") || /<(!doctype|html|head|body)\b/i.test(data);
+    return looksLikeHtml || data.length > 300 ? fallback : data;
   }
 
   if (data.detail) {
