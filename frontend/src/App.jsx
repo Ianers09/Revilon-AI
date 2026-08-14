@@ -1221,14 +1221,15 @@ function App() {
           </button>
         </header>
         <main className="reset-main">
-          <section className="reset-card">
-            <span className="reset-icon"><KeyRound size={24} /></span>
-            <div className="reset-heading">
-              <span>ACCOUNT RECOVERY</span>
-              <h1>Create a new password</h1>
-              <p>Choose a strong, unique password. Completing this step signs out existing sessions.</p>
-            </div>
+          <section className={`reset-card ${resetSuccess ? "reset-card-success" : ""}`}>
             {!resetSuccess ? (
+              <>
+                <span className="reset-icon"><KeyRound size={22} /></span>
+                <div className="reset-heading">
+                  <span>ACCOUNT RECOVERY</span>
+                  <h1>Create a new password</h1>
+                  <p>Choose a strong, unique password. Existing sessions will be signed out.</p>
+                </div>
               <form className="form-stack" onSubmit={submitPasswordReset}>
                 <label><span>New password</span><input type="password" autoComplete="new-password" minLength="8" value={resetForm.new_password} onChange={(event) => setResetForm({ ...resetForm, new_password: event.target.value })} required /></label>
                 <label><span>Confirm new password</span><input type="password" autoComplete="new-password" minLength="8" value={resetForm.confirm_password} onChange={(event) => setResetForm({ ...resetForm, confirm_password: event.target.value })} required /></label>
@@ -1236,8 +1237,15 @@ function App() {
                 {resetError && <div className="form-message error-message">{resetError}</div>}
                 <button className="button button-light button-submit" type="submit" disabled={resetBusy}>{resetBusy ? "Securing account..." : "Reset password"}</button>
               </form>
+              </>
             ) : (
-              <div className="reset-complete"><span><Check size={20} /></span><h2>Password updated</h2><p>{resetSuccess}</p><button className="button button-light" type="button" onClick={() => { navigate("/"); openAuth("login"); }}>Continue to sign in</button></div>
+              <div className="reset-complete" aria-live="polite">
+                <span className="reset-success-icon"><Check size={25} strokeWidth={2} /></span>
+                <span className="reset-success-kicker">ACCOUNT SECURED</span>
+                <h1>Password updated</h1>
+                <p>{resetSuccess}</p>
+                <button className="button button-light reset-success-action" type="button" onClick={() => { navigate("/"); openAuth("login"); }}>Continue to sign in</button>
+              </div>
             )}
           </section>
         </main>
