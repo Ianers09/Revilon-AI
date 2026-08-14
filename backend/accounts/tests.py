@@ -191,14 +191,14 @@ class AdminUserManagementTests(TestCase):
         self.assertEqual(self.member.first_name, "Managed")
         self.assertTrue(self.member.check_password("Combined-Secure-Password-842!"))
 
-    def test_invalid_password_rolls_back_other_account_changes(self):
+    def test_mismatched_password_rolls_back_other_account_changes(self):
         self.client.force_authenticate(self.admin)
         response = self.client.patch(
             f"/api/auth/admin/users/{self.member.id}/",
             {
                 "first_name": "Should not persist",
-                "new_password": "password",
-                "confirm_password": "password",
+                "new_password": "short",
+                "confirm_password": "different",
             },
             format="json",
         )
@@ -206,6 +206,21 @@ class AdminUserManagementTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(self.member.first_name, "")
+
+    def test_admin_can_set_any_non_empty_password(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {
+                "new_password": "123",
+                "confirm_password": "123",
+            },
+            format="json",
+        )
+        self.member.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.member.check_password("123"))
 
     def test_last_active_superuser_cannot_be_disabled(self):
         self.client.force_authenticate(self.superuser)

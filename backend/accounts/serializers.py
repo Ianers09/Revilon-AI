@@ -302,12 +302,8 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 
 class AdminSetPasswordSerializer(serializers.Serializer):
-    new_password = serializers.CharField(write_only=True, min_length=8)
-    confirm_password = serializers.CharField(write_only=True, min_length=8)
-
-    def validate_new_password(self, value):
-        validate_password(value, user=self.context["target_user"])
-        return value
+    new_password = serializers.CharField(write_only=True, allow_blank=False)
+    confirm_password = serializers.CharField(write_only=True, allow_blank=False)
 
     def validate(self, attributes):
         if attributes["new_password"] != attributes["confirm_password"]:
@@ -353,13 +349,11 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         allow_blank=True,
-        min_length=8,
     )
     confirm_password = serializers.CharField(
         write_only=True,
         required=False,
         allow_blank=True,
-        min_length=8,
     )
     first_name = serializers.CharField(
         max_length=150,
@@ -398,7 +392,6 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "confirm_password": "The password confirmation does not match."
                 })
-            validate_password(new_password, user=self.instance)
         if attributes.get("is_superuser") is True:
             attributes["is_staff"] = True
         if attributes.get("is_staff") is False:

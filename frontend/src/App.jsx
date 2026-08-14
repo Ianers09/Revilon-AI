@@ -1716,8 +1716,8 @@ function App() {
                 <div className="admin-password-section">
                   <div><KeyRound size={17} /><span><strong>Set a new password</strong><small>Leave blank to keep the current password. Existing sessions will be revoked.</small></span></div>
                   <div className="form-grid-two">
-                    <label><span>New password</span><input type="password" autoComplete="new-password" minLength="8" value={adminEditForm.new_password} onChange={(event) => setAdminEditForm({ ...adminEditForm, new_password: event.target.value })} /></label>
-                    <label><span>Confirm password</span><input type="password" autoComplete="new-password" minLength="8" value={adminEditForm.confirm_password} onChange={(event) => setAdminEditForm({ ...adminEditForm, confirm_password: event.target.value })} /></label>
+                    <label><span>New password</span><input type="password" autoComplete="new-password" value={adminEditForm.new_password} onChange={(event) => setAdminEditForm({ ...adminEditForm, new_password: event.target.value })} /></label>
+                    <label><span>Confirm password</span><input type="password" autoComplete="new-password" value={adminEditForm.confirm_password} onChange={(event) => setAdminEditForm({ ...adminEditForm, confirm_password: event.target.value })} /></label>
                   </div>
                 </div>
               )}
