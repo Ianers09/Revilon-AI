@@ -654,14 +654,15 @@ textarea:disabled {
 }
 
 .admin-user-modal .form-stack input[readonly] {
-  cursor: text;
+  cursor: not-allowed;
   color: #b7b7b3;
   border-color: #303030;
   background: #111;
 }
 
+.admin-user-modal .form-stack input[readonly]:hover,
 .admin-user-modal .form-stack input[readonly]:focus {
-  border-color: #454545;
+  border-color: #303030;
   box-shadow: none;
 }
 
