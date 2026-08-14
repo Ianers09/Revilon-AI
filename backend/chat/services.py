@@ -31,6 +31,8 @@ Do not assume that a bare reference to "Ian" means Revilon AI's creator. If the
 user asks who Ian is without mentioning Revilon AI, Mingoy, or otherwise
 establishing the creator context, ask which Ian they mean. Once the context
 clearly identifies Revilon AI's creator, use the official profile below.
+Descriptions such as "the one and only", "that Ian", or "you know who" do not
+identify a person and must not be treated as creator context.
 
 Ian Oliver M. Mingoy is the founder and full-stack developer of Revilon AI. He
 is a Bachelor of Science in Information Technology student at Cebu Institute
@@ -68,7 +70,21 @@ def _system_instructions():
         "standard public name stands for Manugas. Always refer to him as "
         "Ian Oliver M. Mingoy "
         "unless a user explicitly asks for his middle name or what the "
-        '"M." stands for. Only in that case, answer Manugas.'
+        '"M." stands for. Only in that case, answer Manugas. Never volunteer '
+        "or expand the middle name in a profile, biography, list, summary, or "
+        'a request such as "tell me everything".'
+    )
+
+
+def _explicitly_asks_middle_name(value):
+    question = re.sub(r"[^a-z0-9.]+", " ", value.lower()).strip()
+    return any(
+        re.search(pattern, question)
+        for pattern in (
+            r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian\s+s|his)\s+)?middle\s*name\b",
+            r"\bwhat\s+does\s+(?:the\s+)?m\.?\s+stand\s+for\b",
+            r"\bwhat(?:\s+is|'s)\s+(?:the\s+)?m\.?\b",
+        )
     )
 
 
@@ -131,8 +147,24 @@ def _creator_identity_response(conversation):
     question = re.sub(r"[^a-z0-9.]+", " ", latest_user_message.content.lower()).strip()
     context = " ".join(message.content.lower() for message in recent_messages)
 
+    previous_assistant_message = next(
+        (message for message in recent_messages if message.role == "assistant"),
+        None,
+    )
+    explicit_creator_identifier = any(
+        phrase in question
+        for phrase in ("mingoy", "revilon", "creator", "founder", "full stack developer")
+    )
+
     if re.fullmatch(r"(?:who is|who s|tell me about) ian", question):
         return "Which Ian do you mean? Please provide a last name or some context."
+
+    if (
+        previous_assistant_message
+        and previous_assistant_message.content.startswith("Which Ian do you mean?")
+        and not explicit_creator_identifier
+    ):
+        return "I still need a last name or specific context to identify which Ian you mean."
 
     asks_creator = re.search(
         r"\bwho\s+(?:created|made|built|developed|founded|invented)\b",
@@ -146,14 +178,7 @@ def _creator_identity_response(conversation):
     if asks_creator and identifies_revilon:
         return "Revilon AI was created by Ian Oliver M. Mingoy."
 
-    asks_middle_name = any(
-        re.search(pattern, question)
-        for pattern in (
-            r"\bwhat(?:\s+is|'s)\s+(?:ian(?:'s)?\s+)?middle\s+name\b",
-            r"\bwhat\s+does\s+(?:the\s+)?m\.?\s+stand\s+for\b",
-            r"\bwhat(?:\s+is|'s)\s+(?:the\s+)?m\.?\b",
-        )
-    )
+    asks_middle_name = _explicitly_asks_middle_name(latest_user_message.content)
     creator_context = any(
         phrase in context
         for phrase in ("ian oliver", "mingoy", "created revilon", "created this ai")
@@ -246,5 +271,9 @@ def generate_ai_response(conversation):
         raise AIServiceError(
             "Ollama returned an empty response. Please try the message again."
         )
+
+    latest_user_message = conversation.messages.filter(role="user").order_by("-created_at").first()
+    if latest_user_message and not _explicitly_asks_middle_name(latest_user_message.content):
+        answer = re.sub(r"\bManugas\b", "M.", answer, flags=re.IGNORECASE)
 
     return answer

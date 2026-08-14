@@ -2,7 +2,12 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from .models import Conversation, Message
-from .services import _conversation_messages, generate_ai_response, remove_emojis
+from .services import (
+    _conversation_messages,
+    _explicitly_asks_middle_name,
+    generate_ai_response,
+    remove_emojis,
+)
 
 
 class RevilonIdentityTests(TestCase):
@@ -106,6 +111,35 @@ class RevilonIdentityTests(TestCase):
         )
 
         self.assertEqual(generate_ai_response(conversation), "His first name is Ian Oliver.")
+
+    def test_vague_follow_up_does_not_identify_the_creator(self):
+        user = get_user_model().objects.create_user(
+            username="vague-ian-test",
+            email="vague-ian@example.com",
+            password="test-password",
+        )
+        conversation = Conversation.objects.create(user=user)
+        Message.objects.create(
+            conversation=conversation,
+            role=Message.Role.ASSISTANT,
+            content="Which Ian do you mean? Please provide a last name or some context.",
+        )
+        Message.objects.create(
+            conversation=conversation,
+            role=Message.Role.USER,
+            content="I mean the one and only.",
+        )
+
+        self.assertEqual(
+            generate_ai_response(conversation),
+            "I still need a last name or specific context to identify which Ian you mean.",
+        )
+
+    def test_middle_name_requires_an_explicit_question(self):
+        self.assertFalse(_explicitly_asks_middle_name("Tell me everything about Ian Mingoy"))
+        self.assertFalse(_explicitly_asks_middle_name("Give me his official profile"))
+        self.assertTrue(_explicitly_asks_middle_name("What is his middle name?"))
+        self.assertTrue(_explicitly_asks_middle_name("What does M. stand for?"))
 
     def test_middle_initial_follow_up_has_consistent_response(self):
         user = get_user_model().objects.create_user(
