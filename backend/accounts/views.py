@@ -575,6 +575,14 @@ class AdminUserDetailView(APIView):
     def patch(self, request, user_id):
         user = self.get_user(user_id)
 
+        if not request.user.is_superuser:
+            allowed_fields = {"new_password", "confirm_password"}
+            if set(request.data).difference(allowed_fields):
+                return Response(
+                    {"detail": "Administrators can only reset member passwords."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         if user.is_superuser and user.id != request.user.id and not request.user.is_superuser:
             return Response(
                 {"detail": "Only a superuser can modify another superuser."},
@@ -652,6 +660,12 @@ class AdminUserDetailView(APIView):
 
     def delete(self, request, user_id):
         user = self.get_user(user_id)
+
+        if not request.user.is_superuser:
+            return Response(
+                {"detail": "Only a superuser can delete accounts."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         if user.id == request.user.id:
             return Response(

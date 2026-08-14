@@ -1122,11 +1122,20 @@ function App() {
       return;
     }
 
+    if (!user.is_superuser && !adminEditForm.new_password) {
+      setAdminActionError("Enter a non-empty password for this member.");
+      setAdminActionBusy(false);
+      return;
+    }
+
     try {
       const accountChanges = { ...adminEditForm };
       if (!user.is_superuser) {
-        delete accountChanges.is_staff;
-        delete accountChanges.is_superuser;
+        Object.keys(accountChanges).forEach((key) => {
+          if (!["new_password", "confirm_password"].includes(key)) {
+            delete accountChanges[key];
+          }
+        });
       }
       const response = await api.patch(
         `/auth/admin/users/${selectedAdminUser.id}/`,
@@ -1687,20 +1696,22 @@ function App() {
             <div className="modal-heading">
               <Avatar user={selectedAdminUser} size="large" />
               <div>
-                <h2>Manage user</h2>
-                <p>Update account details, role, and access.</p>
+                <h2>{user.is_superuser ? "Manage user" : "Reset member password"}</h2>
+                <p>{user.is_superuser ? "Update account details, roles, access, and credentials." : "Set a new password for this member account."}</p>
               </div>
             </div>
 
             <form className="form-stack" onSubmit={saveAdminUser}>
+              {user.is_superuser && (
+                <>
               <div className="form-grid-two">
                 <label>
                   <span>First name</span>
-                  <input value={adminEditForm.first_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, first_name: event.target.value })} required />
+                  <input value={adminEditForm.first_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, first_name: event.target.value })} />
                 </label>
                 <label>
                   <span>Last name</span>
-                  <input value={adminEditForm.last_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, last_name: event.target.value })} required />
+                  <input value={adminEditForm.last_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, last_name: event.target.value })} />
                 </label>
               </div>
               <label>
@@ -1709,8 +1720,10 @@ function App() {
               </label>
               <label>
                 <span>Email address</span>
-                <input type="email" value={adminEditForm.email} onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })} required />
+                <input type="email" value={adminEditForm.email} onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })} />
               </label>
+                </>
+              )}
 
               {selectedAdminUser.id !== user.id && (!selectedAdminUser.is_superuser || user.is_superuser) && (
                 <div className="admin-password-section">
@@ -1722,6 +1735,7 @@ function App() {
                 </div>
               )}
 
+              {user.is_superuser && (
               <div className="admin-toggle-list">
                 <label className="toggle-row">
                   <div>
@@ -1766,11 +1780,13 @@ function App() {
                   </label>
                 )}
               </div>
+              )}
 
               {adminActionError && <div className="form-message error-message">{adminActionError}</div>}
 
-              <div className="modal-actions modal-actions-between">
-                <button
+              <div className={`modal-actions ${user.is_superuser ? "modal-actions-between" : ""}`}>
+                {user.is_superuser && (
+                  <button
                   className="button button-danger-text"
                   type="button"
                   onClick={() => {
@@ -1781,13 +1797,14 @@ function App() {
                 >
                   <Trash2 size={16} />
                   Delete user
-                </button>
+                  </button>
+                )}
                 <div>
                   <button className="button button-outline" type="button" onClick={() => setSelectedAdminUser(null)}>
                     Cancel
                   </button>
                   <button className="button button-light" type="submit" disabled={adminActionBusy}>
-                    {adminActionBusy ? "Saving..." : "Save changes"}
+                    {adminActionBusy ? "Saving..." : user.is_superuser ? "Save changes" : "Update password"}
                   </button>
                 </div>
               </div>
@@ -1903,7 +1920,7 @@ function App() {
             <Avatar user={user} />
             <span className="account-trigger-copy">
               <strong>{getDisplayName(user)}</strong>
-              <small>Revilon AI Account</small>
+              <small>{user.is_staff ? "Administrator" : "Member"}</small>
             </span>
             <ChevronRight size={17} />
           </button>

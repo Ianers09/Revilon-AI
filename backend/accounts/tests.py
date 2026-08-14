@@ -148,7 +148,7 @@ class AdminUserManagementTests(TestCase):
             password="Member-Secure-Password-651!",
         )
 
-    def test_admin_can_update_ordinary_account_without_role_fields(self):
+    def test_admin_cannot_update_ordinary_account_details(self):
         self.client.force_authenticate(self.admin)
         response = self.client.patch(
             f"/api/auth/admin/users/{self.member.id}/",
@@ -157,9 +157,9 @@ class AdminUserManagementTests(TestCase):
         )
         self.member.refresh_from_db()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.member.first_name, "Updated")
-        self.assertFalse(self.member.is_active)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.member.first_name, "")
+        self.assertTrue(self.member.is_active)
 
     def test_superuser_can_promote_an_account_safely(self):
         self.client.force_authenticate(self.superuser)
@@ -175,7 +175,7 @@ class AdminUserManagementTests(TestCase):
         self.assertTrue(self.member.is_staff)
 
     def test_account_and_password_update_are_applied_together(self):
-        self.client.force_authenticate(self.admin)
+        self.client.force_authenticate(self.superuser)
         response = self.client.patch(
             f"/api/auth/admin/users/{self.member.id}/",
             {
@@ -192,7 +192,7 @@ class AdminUserManagementTests(TestCase):
         self.assertTrue(self.member.check_password("Combined-Secure-Password-842!"))
 
     def test_mismatched_password_rolls_back_other_account_changes(self):
-        self.client.force_authenticate(self.admin)
+        self.client.force_authenticate(self.superuser)
         response = self.client.patch(
             f"/api/auth/admin/users/{self.member.id}/",
             {
@@ -241,3 +241,36 @@ class AdminUserManagementTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+
+    def test_regular_admin_cannot_delete_accounts(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.delete(
+            f"/api/auth/admin/users/{self.member.id}/"
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(User.objects.filter(pk=self.member.pk).exists())
+
+    def test_superuser_can_clear_names_and_email(self):
+        self.client.force_authenticate(self.superuser)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {"first_name": "", "last_name": "", "email": ""},
+            format="json",
+        )
+        self.member.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.member.first_name, "")
+        self.assertEqual(self.member.last_name, "")
+        self.assertEqual(self.member.email, "")
+
+    def test_superuser_cannot_create_duplicate_email(self):
+        self.client.force_authenticate(self.superuser)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {"email": self.admin.email.upper()},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
