@@ -250,7 +250,9 @@ for production_origin in PRODUCTION_ORIGINS:
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
-SECURE_SSL_REDIRECT = IS_PRODUCTION
+# Render/Cloudflare enforce the public HTTP-to-HTTPS redirect at the edge.
+# Redirecting again inside Django can loop because the origin connection is HTTP.
+SECURE_SSL_REDIRECT = False
 SECURE_HSTS_SECONDS = 31536000 if IS_PRODUCTION else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = IS_PRODUCTION
 SECURE_HSTS_PRELOAD = False
