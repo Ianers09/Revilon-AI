@@ -229,6 +229,12 @@ function getDisplayName(user) {
   return name || user.username || "Your account";
 }
 
+function getRoleLabel(user) {
+  if (user?.is_superuser) return "Superuser";
+  if (user?.is_staff) return "Administrator";
+  return "Member";
+}
+
 
 function getInitials(user) {
   if (!user) {
@@ -1585,7 +1591,7 @@ function App() {
               <Avatar user={user} />
               <span className="account-trigger-copy">
                 <strong>{getDisplayName(user)}</strong>
-                <small>Administrator</small>
+                <small>{getRoleLabel(user)}</small>
               </span>
               <ChevronRight size={17} />
             </button>
@@ -1929,7 +1935,7 @@ function App() {
             <Avatar user={user} />
             <span className="account-trigger-copy">
               <strong>{getDisplayName(user)}</strong>
-              <small>{user.is_staff ? "Administrator" : "Member"}</small>
+              <small>{getRoleLabel(user)}</small>
             </span>
             <ChevronRight size={17} />
           </button>
