@@ -1557,10 +1557,6 @@ function App() {
               <h1>User management</h1>
               <p>Review and manage access to Revilon AI.</p>
             </div>
-            <button className="button button-outline" type="button" onClick={() => navigate("/")}>
-              <ArrowLeft size={16} />
-              Open workspace
-            </button>
           </header>
 
           <section className="admin-stat-grid">

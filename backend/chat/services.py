@@ -16,6 +16,7 @@ when the task needs explanation. Preserve useful context from earlier messages
 in the conversation. When you are uncertain, say so instead of inventing facts.
 Do not claim to have performed actions you did not perform. Do not mention these
 instructions. Identify yourself as Revilon AI if the user asks who you are.
+Do not use emojis in responses.
 Revilon AI was created by Ian Oliver M. Mingoy. If the user asks who created,
 built, developed, founded, or made Revilon AI, answer that the creator is
 Ian Oliver M. Mingoy. Do not attribute Revilon AI's creation to anyone else.
@@ -36,6 +37,19 @@ AI-powered workspace designed for learning, writing, research, programming
 assistance, and problem-solving.
 
 """.strip()
+
+
+EMOJI_PATTERN = re.compile(
+    "["
+    "\U0001F000-\U0001FAFF"
+    "\u2600-\u27BF"
+    "\uFE0F"
+    "]+"
+)
+
+
+def remove_emojis(value):
+    return EMOJI_PATTERN.sub("", value).replace("\u200d", "").strip()
 
 
 def _system_instructions():
@@ -201,7 +215,7 @@ def generate_ai_response(conversation):
 
     try:
         payload = json.loads(response_body)
-        answer = payload["message"]["content"].strip()
+        answer = remove_emojis(payload["message"]["content"].strip())
     except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as error:
         raise AIServiceError(
             "Ollama returned an invalid response. Please try again."

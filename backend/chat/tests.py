@@ -2,10 +2,16 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from .models import Conversation, Message
-from .services import _conversation_messages, generate_ai_response
+from .services import _conversation_messages, generate_ai_response, remove_emojis
 
 
 class RevilonIdentityTests(TestCase):
+    def test_emojis_are_removed_from_ai_output(self):
+        self.assertEqual(
+            remove_emojis("Hello 👋 Build complete ✅"),
+            "Hello  Build complete",
+        )
+
     def test_creator_identity_is_in_system_instructions(self):
         user = get_user_model().objects.create_user(
             username="identity-test",
