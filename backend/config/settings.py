@@ -185,7 +185,8 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "register": "5/hour",
+        "register_ip": "20/hour",
+        "register_email": "3/hour",
         "verify_email": "20/hour",
         "resend_verification": "5/hour",
         "login": "10/minute",

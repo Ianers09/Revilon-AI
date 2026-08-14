@@ -104,6 +104,15 @@ function getErrorMessage(error, fallback = "Something went wrong. Please try aga
   const status = error?.response?.status;
   const contentType = String(error?.response?.headers?.["content-type"] || "");
 
+  if (status === 429) {
+    const retryAfter = Number(error?.response?.headers?.["retry-after"] || 0);
+    if (retryAfter > 0) {
+      const minutes = Math.max(1, Math.ceil(retryAfter / 60));
+      return `Too many attempts. Please try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`;
+    }
+    return "Too many attempts. Please wait a moment and try again.";
+  }
+
   if (status >= 500) {
     return "Revilon AI is temporarily unavailable. Please wait a moment and try again.";
   }

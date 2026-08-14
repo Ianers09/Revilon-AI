@@ -44,6 +44,7 @@ from .services import (
     send_verification_code,
     send_password_reset_email,
 )
+from .throttles import RegistrationEmailThrottle, RegistrationIPThrottle
 
 
 def create_tokens_for_user(user):
@@ -65,7 +66,7 @@ def revoke_user_refresh_tokens(user):
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
-    throttle_scope = "register"
+    throttle_classes = [RegistrationIPThrottle, RegistrationEmailThrottle]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
