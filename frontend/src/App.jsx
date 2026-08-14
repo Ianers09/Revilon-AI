@@ -1104,6 +1104,7 @@ function App() {
       email: adminUser.email || "",
       is_active: adminUser.is_active,
       is_staff: adminUser.is_staff,
+      is_superuser: adminUser.is_superuser,
       new_password: "",
       confirm_password: "",
     });
@@ -1122,18 +1123,15 @@ function App() {
     }
 
     try {
-      const { new_password, confirm_password, ...accountChanges } = adminEditForm;
+      const accountChanges = { ...adminEditForm };
+      if (!user.is_superuser) {
+        delete accountChanges.is_staff;
+        delete accountChanges.is_superuser;
+      }
       const response = await api.patch(
         `/auth/admin/users/${selectedAdminUser.id}/`,
         accountChanges,
       );
-
-      if (new_password) {
-        await api.post(`/auth/admin/users/${selectedAdminUser.id}/password/`, {
-          new_password,
-          confirm_password,
-        });
-      }
 
       setAdminUsers((current) =>
         current.map((item) =>
@@ -1749,6 +1747,24 @@ function App() {
                     disabled={!user.is_superuser || selectedAdminUser.id === user.id}
                   />
                 </label>
+                {user.is_superuser && (
+                  <label className="toggle-row">
+                    <div>
+                      <strong>Superuser access</strong>
+                      <span>Grant full control over privileged accounts and roles.</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={adminEditForm.is_superuser}
+                      onChange={(event) => setAdminEditForm({
+                        ...adminEditForm,
+                        is_superuser: event.target.checked,
+                        is_staff: event.target.checked ? true : adminEditForm.is_staff,
+                      })}
+                      disabled={selectedAdminUser.id === user.id}
+                    />
+                  </label>
+                )}
               </div>
 
               {adminActionError && <div className="form-message error-message">{adminActionError}</div>}
@@ -1761,7 +1777,7 @@ function App() {
                     setSelectedAdminUser(null);
                     setAdminDeleteUser(selectedAdminUser);
                   }}
-                  disabled={selectedAdminUser.id === user.id || selectedAdminUser.is_superuser}
+                  disabled={selectedAdminUser.id === user.id || (selectedAdminUser.is_superuser && !user.is_superuser)}
                 >
                   <Trash2 size={16} />
                   Delete user

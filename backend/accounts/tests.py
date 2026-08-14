@@ -126,3 +126,103 @@ class AdminSetPasswordTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+
+
+class AdminUserManagementTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.superuser = User.objects.create_superuser(
+            username="owner",
+            email="owner@example.com",
+            password="Owner-Secure-Password-931!",
+        )
+        self.admin = User.objects.create_user(
+            username="administrator",
+            email="administrator@example.com",
+            password="Admin-Secure-Password-741!",
+            is_staff=True,
+        )
+        self.member = User.objects.create_user(
+            username="member-two",
+            email="member-two@example.com",
+            password="Member-Secure-Password-651!",
+        )
+
+    def test_admin_can_update_ordinary_account_without_role_fields(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {"first_name": "Updated", "is_active": False},
+            format="json",
+        )
+        self.member.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.member.first_name, "Updated")
+        self.assertFalse(self.member.is_active)
+
+    def test_superuser_can_promote_an_account_safely(self):
+        self.client.force_authenticate(self.superuser)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {"is_superuser": True},
+            format="json",
+        )
+        self.member.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.member.is_superuser)
+        self.assertTrue(self.member.is_staff)
+
+    def test_account_and_password_update_are_applied_together(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {
+                "first_name": "Managed",
+                "new_password": "Combined-Secure-Password-842!",
+                "confirm_password": "Combined-Secure-Password-842!",
+            },
+            format="json",
+        )
+        self.member.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.member.first_name, "Managed")
+        self.assertTrue(self.member.check_password("Combined-Secure-Password-842!"))
+
+    def test_invalid_password_rolls_back_other_account_changes(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {
+                "first_name": "Should not persist",
+                "new_password": "password",
+                "confirm_password": "password",
+            },
+            format="json",
+        )
+        self.member.refresh_from_db()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.member.first_name, "")
+
+    def test_last_active_superuser_cannot_be_disabled(self):
+        self.client.force_authenticate(self.superuser)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.superuser.id}/",
+            {"is_active": False},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_regular_admin_cannot_change_privileged_roles(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(
+            f"/api/auth/admin/users/{self.member.id}/",
+            {"is_staff": True},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)

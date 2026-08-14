@@ -575,13 +575,9 @@ class AdminUserDetailView(APIView):
     def patch(self, request, user_id):
         user = self.get_user(user_id)
 
-        if user.is_superuser and user.id != request.user.id:
+        if user.is_superuser and user.id != request.user.id and not request.user.is_superuser:
             return Response(
-                {
-                    "detail": (
-                        "Superuser accounts cannot be modified from this dashboard."
-                    )
-                },
+                {"detail": "Only a superuser can modify another superuser."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -604,20 +600,47 @@ class AdminUserDetailView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            if "is_superuser" in request.data and false_value(
+                request.data.get("is_superuser")
+            ) and user.is_superuser:
+                return Response(
+                    {"detail": "You cannot remove your own superuser access."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        if "is_staff" in request.data and not request.user.is_superuser:
+        role_fields = {"is_staff", "is_superuser"}.intersection(request.data)
+        if role_fields and not request.user.is_superuser:
             return Response(
-                {"detail": "Only a superuser can change administrator access."},
+                {"detail": "Only a superuser can change privileged roles."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = AdminUserUpdateSerializer(
-            user,
-            data=request.data,
-            partial=True,
-        )
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        resulting_active = request.data.get("is_active", user.is_active)
+        resulting_superuser = request.data.get("is_superuser", user.is_superuser)
+        if (
+            user.is_active
+            and user.is_superuser
+            and (false_value(resulting_active) or false_value(resulting_superuser))
+            and not User.objects.filter(
+                is_active=True,
+                is_superuser=True,
+            ).exclude(pk=user.pk).exists()
+        ):
+            return Response(
+                {"detail": "Create another active superuser before changing the last one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            serializer = AdminUserUpdateSerializer(
+                user,
+                data=request.data,
+                partial=True,
+            )
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            if request.data.get("new_password"):
+                revoke_user_refresh_tokens(user)
 
         return Response(
             AdminUserSerializer(
@@ -636,14 +659,19 @@ class AdminUserDetailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if user.is_superuser:
+        if user.is_superuser and not request.user.is_superuser:
             return Response(
-                {
-                    "detail": (
-                        "Superuser accounts cannot be deleted from this dashboard."
-                    )
-                },
+                {"detail": "Only a superuser can delete another superuser."},
                 status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if user.is_active and user.is_superuser and not User.objects.filter(
+            is_active=True,
+            is_superuser=True,
+        ).exclude(pk=user.pk).exists():
+            return Response(
+                {"detail": "The last active superuser cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         username = user.username
