@@ -108,5 +108,9 @@ is available. If Render assigns a different name, update `DJANGO_ALLOWED_HOSTS`,
 `CORS_ALLOWED_ORIGINS`, and `CSRF_TRUSTED_ORIGINS` in its dashboard.
 
 Free-tier limits apply: Render sleeps after 15 idle minutes and can take about
-a minute to wake; Ollama Cloud has usage limits; and database free tiers have
-their own quotas. Do not commit either secret to Git.
+a minute to wake. The included GitHub Actions workflow requests `/health/`
+every 10 minutes to prevent idle sleep after it is pushed to the repository and
+GitHub Actions is enabled. Scheduled workflows can be delayed or disabled by
+GitHub, and Render can still restart free services, so a paid Render instance is
+required for guaranteed uptime. Ollama Cloud has usage limits, and database free
+tiers have their own quotas. Do not commit either secret to Git.

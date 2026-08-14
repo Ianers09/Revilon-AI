@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.urls import include, path, re_path
 from django.views.static import serve
 
@@ -27,7 +27,13 @@ def react_app(request):
     return response
 
 
+def health_check(request):
+    """Cheap unauthenticated endpoint for Render and external uptime probes."""
+    return JsonResponse({"status": "ok"})
+
+
 urlpatterns = [
+    path("health/", health_check, name="health-check"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
     path("api/chat/", include("chat.urls")),
