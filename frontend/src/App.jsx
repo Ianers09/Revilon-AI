@@ -562,13 +562,31 @@ function App() {
     setAdminError("");
 
     try {
-      const response = await api.get("/auth/admin/users/", {
-        params: searchValue ? { search: searchValue } : {},
-      });
+      let response;
+      let lastError;
+
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          response = await api.get("/auth/admin/users/", {
+            params: searchValue ? { search: searchValue } : {},
+          });
+          break;
+        } catch (error) {
+          lastError = error;
+          const temporaryFailure = !error.response || error.response.status >= 500;
+          if (!temporaryFailure || attempt === 2) throw error;
+          await new Promise((resolve) => window.setTimeout(resolve, 700 * (attempt + 1)));
+        }
+      }
+
+      if (!response) throw lastError;
       setAdminUsers(response.data.users || []);
       setAdminStats(response.data.stats || {});
+      setAdminError("");
     } catch (error) {
-      setAdminError(getErrorMessage(error, "Could not load users."));
+      setAdminError((adminUsers?.length || 0) > 0
+        ? ""
+        : getErrorMessage(error, "Could not load users."));
     } finally {
       setAdminBusy(false);
     }
