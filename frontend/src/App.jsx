@@ -1711,34 +1711,30 @@ function App() {
             <div className="modal-heading">
               <Avatar user={selectedAdminUser} size="large" />
               <div>
-                <h2>{user.is_superuser ? "Manage user" : "Reset member password"}</h2>
-                <p>{user.is_superuser ? "Update account details, roles, access, and credentials." : "Set a new password for this member account."}</p>
+                <h2>Manage user</h2>
+                <p>{user.is_superuser ? "Update account details, roles, access, and credentials." : "Review account details and update the member password."}</p>
               </div>
             </div>
 
             <form className="form-stack" onSubmit={saveAdminUser}>
-              {user.is_superuser && (
-                <>
               <div className="form-grid-two">
                 <label>
                   <span>First name</span>
-                  <input value={adminEditForm.first_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, first_name: event.target.value })} />
+                  <input value={adminEditForm.first_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, first_name: event.target.value })} disabled={!user.is_superuser} />
                 </label>
                 <label>
                   <span>Last name</span>
-                  <input value={adminEditForm.last_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, last_name: event.target.value })} />
+                  <input value={adminEditForm.last_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, last_name: event.target.value })} disabled={!user.is_superuser} />
                 </label>
               </div>
               <label>
                 <span>Username</span>
-                <input value={adminEditForm.username} onChange={(event) => setAdminEditForm({ ...adminEditForm, username: event.target.value })} required />
+                <input value={adminEditForm.username} onChange={(event) => setAdminEditForm({ ...adminEditForm, username: event.target.value })} required disabled={!user.is_superuser} />
               </label>
               <label>
                 <span>Email address</span>
-                <input type="email" value={adminEditForm.email} onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })} />
+                <input type="email" value={adminEditForm.email} onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })} disabled={!user.is_superuser} />
               </label>
-                </>
-              )}
 
               {selectedAdminUser.id !== user.id && (!selectedAdminUser.is_superuser || user.is_superuser) && (
                 <div className="admin-password-section">
@@ -1750,7 +1746,6 @@ function App() {
                 </div>
               )}
 
-              {user.is_superuser && (
               <div className="admin-toggle-list">
                 <label className="toggle-row">
                   <div>
@@ -1761,7 +1756,7 @@ function App() {
                     type="checkbox"
                     checked={adminEditForm.is_active}
                     onChange={(event) => setAdminEditForm({ ...adminEditForm, is_active: event.target.checked })}
-                    disabled={selectedAdminUser.id === user.id}
+                    disabled={!user.is_superuser || selectedAdminUser.id === user.id}
                   />
                 </label>
                 <label className="toggle-row">
@@ -1776,7 +1771,6 @@ function App() {
                     disabled={!user.is_superuser || selectedAdminUser.id === user.id}
                   />
                 </label>
-                {user.is_superuser && (
                   <label className="toggle-row">
                     <div>
                       <strong>Superuser access</strong>
@@ -1790,12 +1784,10 @@ function App() {
                         is_superuser: event.target.checked,
                         is_staff: event.target.checked ? true : adminEditForm.is_staff,
                       })}
-                      disabled={selectedAdminUser.id === user.id}
+                      disabled={!user.is_superuser || selectedAdminUser.id === user.id}
                     />
                   </label>
-                )}
               </div>
-              )}
 
               {adminActionError && <div className="form-message error-message">{adminActionError}</div>}
 
@@ -1819,7 +1811,7 @@ function App() {
                     Cancel
                   </button>
                   <button className="button button-light" type="submit" disabled={adminActionBusy}>
-                    {adminActionBusy ? "Saving..." : user.is_superuser ? "Save changes" : "Update password"}
+                    {adminActionBusy ? "Saving..." : "Save changes"}
                   </button>
                 </div>
               </div>
