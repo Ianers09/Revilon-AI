@@ -352,6 +352,15 @@ function App() {
   const [verificationBusy, setVerificationBusy] = useState(false);
   const [verificationError, setVerificationError] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotBusy, setForgotBusy] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [resetForm, setResetForm] = useState({ new_password: "", confirm_password: "" });
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState("");
 
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -412,6 +421,8 @@ function App() {
 
   const isAuthenticated = Boolean(user);
   const isAdminPage = path === "/admin";
+  const resetPathMatch = path.match(/^\/reset-password\/([^/]+)\/([^/]+)\/?$/);
+  const isPasswordResetPage = Boolean(resetPathMatch);
 
   const navigate = (nextPath) => {
     window.history.pushState({}, "", nextPath);
@@ -600,6 +611,55 @@ function App() {
     setVerificationError("");
     setVerificationMessage(message);
     setVerificationOpen(true);
+  };
+
+  const openForgotPassword = () => {
+    setAuthOpen(false);
+    setForgotEmail("");
+    setForgotError("");
+    setForgotMessage("");
+    setForgotOpen(true);
+  };
+
+  const submitForgotPassword = async (event) => {
+    event.preventDefault();
+    setForgotBusy(true);
+    setForgotError("");
+    setForgotMessage("");
+    try {
+      const response = await api.post("/auth/password-reset/", { email: forgotEmail });
+      setForgotMessage(response.data.message);
+    } catch (error) {
+      setForgotError(getErrorMessage(error, "Could not send the reset email."));
+    } finally {
+      setForgotBusy(false);
+    }
+  };
+
+  const submitPasswordReset = async (event) => {
+    event.preventDefault();
+    setResetError("");
+    setResetSuccess("");
+    if (resetForm.new_password !== resetForm.confirm_password) {
+      setResetError("The password confirmation does not match.");
+      return;
+    }
+    setResetBusy(true);
+    try {
+      const response = await api.post("/auth/password-reset/confirm/", {
+        uid: resetPathMatch?.[1],
+        token: resetPathMatch?.[2],
+        ...resetForm,
+      });
+      clearSession();
+      window.history.replaceState({}, "", "/");
+      setResetSuccess(response.data.message);
+      setResetForm({ new_password: "", confirm_password: "" });
+    } catch (error) {
+      setResetError(getErrorMessage(error, "This reset link is invalid or expired."));
+    } finally {
+      setResetBusy(false);
+    }
   };
 
   const saveTokens = (data) => {
@@ -1017,6 +1077,8 @@ function App() {
       email: adminUser.email || "",
       is_active: adminUser.is_active,
       is_staff: adminUser.is_staff,
+      new_password: "",
+      confirm_password: "",
     });
     setAdminActionError("");
   };
@@ -1026,11 +1088,25 @@ function App() {
     setAdminActionBusy(true);
     setAdminActionError("");
 
+    if (adminEditForm.new_password !== adminEditForm.confirm_password) {
+      setAdminActionError("The password confirmation does not match.");
+      setAdminActionBusy(false);
+      return;
+    }
+
     try {
+      const { new_password, confirm_password, ...accountChanges } = adminEditForm;
       const response = await api.patch(
         `/auth/admin/users/${selectedAdminUser.id}/`,
-        adminEditForm,
+        accountChanges,
       );
+
+      if (new_password) {
+        await api.post(`/auth/admin/users/${selectedAdminUser.id}/password/`, {
+          new_password,
+          confirm_password,
+        });
+      }
 
       setAdminUsers((current) =>
         current.map((item) =>
@@ -1105,6 +1181,39 @@ function App() {
       <div className="app-loading">
         <span className="brand-mark">R</span>
         <span>Loading Revilon AI</span>
+      </div>
+    );
+  }
+
+  if (isPasswordResetPage) {
+    return (
+      <div className="reset-page">
+        <header className="landing-header">
+          <button className="brand-button" type="button" onClick={() => navigate("/")}>
+            <span className="brand-mark">R</span><span>Revilon AI</span>
+          </button>
+        </header>
+        <main className="reset-main">
+          <section className="reset-card">
+            <span className="reset-icon"><KeyRound size={24} /></span>
+            <div className="reset-heading">
+              <span>ACCOUNT RECOVERY</span>
+              <h1>Create a new password</h1>
+              <p>Choose a strong, unique password. Completing this step signs out existing sessions.</p>
+            </div>
+            {!resetSuccess ? (
+              <form className="form-stack" onSubmit={submitPasswordReset}>
+                <label><span>New password</span><input type="password" autoComplete="new-password" minLength="8" value={resetForm.new_password} onChange={(event) => setResetForm({ ...resetForm, new_password: event.target.value })} required /></label>
+                <label><span>Confirm new password</span><input type="password" autoComplete="new-password" minLength="8" value={resetForm.confirm_password} onChange={(event) => setResetForm({ ...resetForm, confirm_password: event.target.value })} required /></label>
+                <p className="password-guidance">Use at least 8 characters and avoid common or personal passwords.</p>
+                {resetError && <div className="form-message error-message">{resetError}</div>}
+                <button className="button button-light button-submit" type="submit" disabled={resetBusy}>{resetBusy ? "Securing account..." : "Reset password"}</button>
+              </form>
+            ) : (
+              <div className="reset-complete"><span><Check size={20} /></span><h2>Password updated</h2><p>{resetSuccess}</p><button className="button button-light" type="button" onClick={() => { navigate("/"); openAuth("login"); }}>Continue to sign in</button></div>
+            )}
+          </section>
+        </main>
       </div>
     );
   }
@@ -1242,6 +1351,12 @@ function App() {
                 />
               </label>
 
+              {authMode === "login" && (
+                <button className="forgot-password-link" type="button" onClick={openForgotPassword}>
+                  Forgot password?
+                </button>
+              )}
+
               {authMode === "register" && (
                 <label>
                   <span>Confirm password</span>
@@ -1354,6 +1469,21 @@ function App() {
                 Back to sign in
               </button>
             </div>
+          </Modal>
+        )}
+
+        {forgotOpen && (
+          <Modal onClose={() => setForgotOpen(false)} className="auth-modal recovery-modal">
+            <button className="modal-close" type="button" onClick={() => setForgotOpen(false)} aria-label="Close"><X size={18} /></button>
+            <div className="modal-heading"><span className="modal-icon"><KeyRound size={20} /></span><div><h2>Reset your password</h2><p>We’ll email a secure, single-use link to your account.</p></div></div>
+            <form className="form-stack" onSubmit={submitForgotPassword}>
+              <label><span>Email address</span><input type="email" autoComplete="email" value={forgotEmail} onChange={(event) => setForgotEmail(event.target.value)} required autoFocus /></label>
+              <p className="security-note"><Shield size={15} /> For privacy, we won’t reveal whether an email is registered.</p>
+              {forgotError && <div className="form-message error-message">{forgotError}</div>}
+              {forgotMessage && <div className="form-message success-message">{forgotMessage}</div>}
+              <button className="button button-light button-submit" type="submit" disabled={forgotBusy || Boolean(forgotMessage)}>{forgotBusy ? "Sending securely..." : forgotMessage ? "Email sent" : "Send reset link"}</button>
+            </form>
+            <button className="auth-back-link" type="button" onClick={() => { setForgotOpen(false); openAuth("login"); }}><ArrowLeft size={15} /> Back to sign in</button>
           </Modal>
         )}
       </div>
@@ -1549,6 +1679,16 @@ function App() {
                 <span>Email address</span>
                 <input type="email" value={adminEditForm.email} onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })} required />
               </label>
+
+              {selectedAdminUser.id !== user.id && (!selectedAdminUser.is_superuser || user.is_superuser) && (
+                <div className="admin-password-section">
+                  <div><KeyRound size={17} /><span><strong>Set a new password</strong><small>Leave blank to keep the current password. Existing sessions will be revoked.</small></span></div>
+                  <div className="form-grid-two">
+                    <label><span>New password</span><input type="password" autoComplete="new-password" minLength="8" value={adminEditForm.new_password} onChange={(event) => setAdminEditForm({ ...adminEditForm, new_password: event.target.value })} /></label>
+                    <label><span>Confirm password</span><input type="password" autoComplete="new-password" minLength="8" value={adminEditForm.confirm_password} onChange={(event) => setAdminEditForm({ ...adminEditForm, confirm_password: event.target.value })} /></label>
+                  </div>
+                </div>
+              )}
 
               <div className="admin-toggle-list">
                 <label className="toggle-row">

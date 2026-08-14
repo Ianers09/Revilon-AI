@@ -24,6 +24,8 @@ def react_app(request):
     response["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
+    if request.path.startswith("/reset-password/"):
+        response["Referrer-Policy"] = "no-referrer"
     return response
 
 
@@ -78,4 +80,9 @@ else:
 urlpatterns += [
     path("", react_app, name="react-app"),
     path("admin", react_app, name="react-admin-app"),
+    re_path(
+        r"^reset-password/[A-Za-z0-9_-]+/[A-Za-z0-9_-]+$",
+        react_app,
+        name="react-password-reset",
+    ),
 ]

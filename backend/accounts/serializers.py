@@ -280,6 +280,43 @@ class ChangePasswordSerializer(serializers.Serializer):
         return attributes
 
 
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True, min_length=8)
+
+    def validate(self, attributes):
+        if attributes["new_password"] != attributes["confirm_password"]:
+            raise serializers.ValidationError({
+                "confirm_password": "The password confirmation does not match."
+            })
+        return attributes
+
+
+class AdminSetPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True, min_length=8)
+
+    def validate_new_password(self, value):
+        validate_password(value, user=self.context["target_user"])
+        return value
+
+    def validate(self, attributes):
+        if attributes["new_password"] != attributes["confirm_password"]:
+            raise serializers.ValidationError({
+                "confirm_password": "The password confirmation does not match."
+            })
+        return attributes
+
+
 class AdminUserSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField()
     profile_picture = serializers.SerializerMethodField()

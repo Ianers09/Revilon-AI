@@ -3,23 +3,34 @@ from datetime import timedelta
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User, update_last_login
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 
 from .models import EmailVerificationCode, Profile
 from .serializers import (
     AdminUserSerializer,
+    AdminSetPasswordSerializer,
     AdminUserUpdateSerializer,
     ChangePasswordSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
     EmailVerificationSerializer,
     ProfileUpdateSerializer,
     ProfilePictureSerializer,
@@ -31,6 +42,7 @@ from .services import (
     EmailDeliveryError,
     VerificationRateLimitError,
     send_verification_code,
+    send_password_reset_email,
 )
 
 
@@ -44,6 +56,11 @@ def create_tokens_for_user(user):
 
 def false_value(value):
     return value in {False, "false", "False", "0", 0}
+
+
+def revoke_user_refresh_tokens(user):
+    for token in OutstandingToken.objects.filter(user=user):
+        BlacklistedToken.objects.get_or_create(token=token)
 
 
 class RegisterView(APIView):
@@ -421,6 +438,7 @@ class ChangePasswordView(APIView):
             serializer.validated_data["new_password"]
         )
         request.user.save(update_fields=["password"])
+        revoke_user_refresh_tokens(request.user)
 
         return Response(
             {
@@ -430,6 +448,72 @@ class ChangePasswordView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+    throttle_scope = "password_reset_request"
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.filter(
+            email__iexact=serializer.validated_data["email"],
+            is_active=True,
+        ).first()
+
+        if user is not None:
+            try:
+                send_password_reset_email(user)
+            except EmailDeliveryError:
+                pass
+
+        return Response({
+            "message": (
+                "If an active account matches that email, a password reset "
+                "link has been sent."
+            )
+        })
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+    throttle_scope = "password_reset_confirm"
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            user_id = force_str(urlsafe_base64_decode(
+                serializer.validated_data["uid"]
+            ))
+            user = User.objects.get(pk=user_id, is_active=True)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is None or not default_token_generator.check_token(
+            user, serializer.validated_data["token"]
+        ):
+            return Response(
+                {"detail": "This password reset link is invalid or has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            validate_password(serializer.validated_data["new_password"], user=user)
+        except Exception as error:
+            return Response(
+                {"new_password": list(error.messages)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(serializer.validated_data["new_password"])
+        user.save(update_fields=["password"])
+        revoke_user_refresh_tokens(user)
+        return Response({
+            "message": "Your password has been reset. You can now sign in."
+        })
 
 
 class AdminUserListView(APIView):
@@ -486,6 +570,7 @@ class AdminUserDetailView(APIView):
             ).data,
             status=status.HTTP_200_OK,
         )
+
 
     def patch(self, request, user_id):
         user = self.get_user(user_id)
@@ -567,3 +652,33 @@ class AdminUserDetailView(APIView):
             {"message": f'User "{username}" was deleted successfully.'},
             status=status.HTTP_200_OK,
         )
+
+
+class AdminSetPasswordView(APIView):
+    permission_classes = [IsAdminUser]
+    throttle_scope = "admin_password_change"
+
+    def post(self, request, user_id):
+        target = get_object_or_404(User, id=user_id)
+        if target.id == request.user.id:
+            return Response(
+                {"detail": "Use Change password to update your own password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if target.is_superuser and not request.user.is_superuser:
+            return Response(
+                {"detail": "Only a superuser can reset a superuser password."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = AdminSetPasswordSerializer(
+            data=request.data,
+            context={"target_user": target},
+        )
+        serializer.is_valid(raise_exception=True)
+        target.set_password(serializer.validated_data["new_password"])
+        target.save(update_fields=["password"])
+        revoke_user_refresh_tokens(target)
+        return Response({
+            "message": f"Password updated for {target.username}."
+        })

@@ -4,12 +4,15 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     AdminUserDetailView,
     AdminUserListView,
+    AdminSetPasswordView,
     ChangePasswordView,
     LoginView,
     LogoutView,
     ProfilePictureView,
     ProfilePictureContentView,
     ProfileView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     RegisterView,
     ResendVerificationView,
     VerifyEmailView,
@@ -33,6 +36,16 @@ urlpatterns = [
         name="resend-verification",
     ),
     path("login/", LoginView.as_view(), name="login"),
+    path(
+        "password-reset/",
+        PasswordResetRequestView.as_view(),
+        name="password-reset-request",
+    ),
+    path(
+        "password-reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
+    ),
     path(
         "token/refresh/",
         ThrottledTokenRefreshView.as_view(),
@@ -64,5 +77,10 @@ urlpatterns = [
         "admin/users/<int:user_id>/",
         AdminUserDetailView.as_view(),
         name="admin-user-detail",
+    ),
+    path(
+        "admin/users/<int:user_id>/password/",
+        AdminSetPasswordView.as_view(),
+        name="admin-user-password",
     ),
 ]

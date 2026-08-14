@@ -191,6 +191,9 @@ REST_FRAMEWORK = {
         "login": "10/minute",
         "token_refresh": "30/hour",
         "password_change": "5/hour",
+        "password_reset_request": "5/hour",
+        "password_reset_confirm": "10/hour",
+        "admin_password_change": "10/hour",
         "profile_picture": "20/hour",
         "ai_message": "30/hour",
     },
@@ -264,6 +267,9 @@ CSRF_COOKIE_SAMESITE = "Lax"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+
+PUBLIC_APP_URL = os.getenv("PUBLIC_APP_URL", "https://revilonai.com").rstrip("/")
+PASSWORD_RESET_TIMEOUT = 30 * 60
 
 OLLAMA_BASE_URL = os.getenv(
     "OLLAMA_BASE_URL",
