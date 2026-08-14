@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 from .models import Conversation
 from .services import _conversation_messages
@@ -26,8 +26,7 @@ class RevilonIdentityTests(TestCase):
         self.assertIn("full-stack developer", system_message["content"])
         self.assertIn("Do not\ninvent, assume, or embellish", system_message["content"])
 
-    @override_settings(CREATOR_MIDDLE_NAME="PrivateMiddleName")
-    def test_middle_name_is_added_only_from_private_setting(self):
+    def test_middle_name_is_known_but_initial_is_default(self):
         user = get_user_model().objects.create_user(
             username="private-identity-test",
             email="private-identity@example.com",
@@ -37,5 +36,6 @@ class RevilonIdentityTests(TestCase):
 
         system_content = _conversation_messages(conversation)[0]["content"]
 
-        self.assertIn("middle name is PrivateMiddleName", system_content)
-        self.assertIn("never volunteer", system_content)
+        self.assertIn("middle name is Manugas", system_content)
+        self.assertIn("Always refer to him as Ian Oliver M. Mingoy", system_content)
+        self.assertIn("Only in that case, answer Manugas", system_content)

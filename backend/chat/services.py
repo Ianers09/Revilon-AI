@@ -39,20 +39,12 @@ assistance, and problem-solving.
 
 
 def _system_instructions():
-    instructions = SYSTEM_INSTRUCTIONS
-    middle_name = settings.CREATOR_MIDDLE_NAME.strip()
-
-    if middle_name:
-        instructions += (
-            f'\n\nIan\'s middle name is {middle_name}, and the "M." in his '
-            f"public name stands for {middle_name}. Keep the middle name "
-            "private by default: always refer to him publicly as Ian Oliver "
-            "M. Mingoy and never volunteer the expanded middle name. Only "
-            "provide it if a user explicitly asks for Ian's middle name or "
-            'what the "M." stands for.'
-        )
-
-    return instructions
+    return SYSTEM_INSTRUCTIONS + (
+        '\n\nIan\'s middle name is Manugas, and the "M." in his public name '
+        "stands for Manugas. Always refer to him as Ian Oliver M. Mingoy "
+        "unless a user explicitly asks for his middle name or what the "
+        '"M." stands for. Only in that case, answer Manugas.'
+    )
 
 
 class AIServiceError(Exception):
