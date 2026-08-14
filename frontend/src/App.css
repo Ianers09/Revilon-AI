@@ -205,6 +205,12 @@
   transform: translateX(-1px);
 }
 
+.forgot-password-link:active,
+.auth-back-link:active {
+  color: #c4c4c4;
+  transform: translateX(-1px) scale(0.98);
+}
+
 .auth-back-link {
   align-self: flex-start;
   margin-top: 1rem;

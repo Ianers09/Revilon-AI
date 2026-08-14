@@ -96,6 +96,14 @@ textarea::placeholder {
 
 button {
   color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Give mouse and touch interactions a consistent, tactile pressed state. */
+button:active:not(:disabled),
+a[href]:active {
+  filter: brightness(0.82);
+  transform: scale(0.98);
 }
 
 button:focus-visible,
@@ -204,10 +212,6 @@ textarea:disabled {
   color: #111;
   background: var(--white-soft);
   border-color: var(--white-soft);
-}
-
-.button-light:active:not(:disabled) {
-  transform: translateY(1px);
 }
 
 .button-light:hover {
@@ -440,6 +444,19 @@ textarea:disabled {
 
 .landing-composer textarea::placeholder {
   color: var(--text-placeholder);
+}
+
+.message-character-count {
+  flex: 0 0 auto;
+  color: #777774;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.message-character-count.warning {
+  color: #d49a72;
 }
 
 .landing-icon-button {
@@ -977,6 +994,11 @@ textarea:disabled {
   border-radius: 9px;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.chat-character-count {
+  margin: 7px 5px -1px;
+  text-align: right;
 }
 
 .error-message,

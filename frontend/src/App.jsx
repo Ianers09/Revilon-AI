@@ -34,6 +34,13 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.DEV ? "http://127.0.0.1:8000/api" : "/api");
 
+// Keep this aligned with SendMessageSerializer.content in the backend.
+const CHAT_MESSAGE_MAX_LENGTH = 100000;
+const CHAT_MESSAGE_COUNTER_THRESHOLD = 75000;
+
+const remainingMessageCharacters = (message) =>
+  (CHAT_MESSAGE_MAX_LENGTH - message.length).toLocaleString();
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000,
@@ -1313,9 +1320,19 @@ function App() {
               <textarea
                 rows="1"
                 value={landingMessage}
+                maxLength={CHAT_MESSAGE_MAX_LENGTH}
                 onChange={(event) => setLandingMessage(event.target.value)}
                 placeholder="Write a message"
               />
+
+              {landingMessage.length >= CHAT_MESSAGE_COUNTER_THRESHOLD && (
+                <span
+                  className={`message-character-count${landingMessage.length >= CHAT_MESSAGE_MAX_LENGTH * 0.95 ? " warning" : ""}`}
+                  aria-live="polite"
+                >
+                  {remainingMessageCharacters(landingMessage)} left
+                </span>
+              )}
 
               <button
                 className="landing-send-button"
@@ -1986,6 +2003,7 @@ function App() {
           <form className="chat-composer" onSubmit={sendMessage}>
             <textarea
               value={messageText}
+              maxLength={CHAT_MESSAGE_MAX_LENGTH}
               onChange={(event) => setMessageText(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
@@ -2007,6 +2025,14 @@ function App() {
               {chatBusy ? <Square size={15} fill="currentColor" /> : <ArrowUp size={19} />}
             </button>
           </form>
+          {messageText.length >= CHAT_MESSAGE_COUNTER_THRESHOLD && (
+            <p
+              className={`message-character-count chat-character-count${messageText.length >= CHAT_MESSAGE_MAX_LENGTH * 0.95 ? " warning" : ""}`}
+              aria-live="polite"
+            >
+              {remainingMessageCharacters(messageText)} characters left
+            </p>
+          )}
           <p className="chat-disclaimer">
             Revilon AI can make mistakes. Review important information.
           </p>

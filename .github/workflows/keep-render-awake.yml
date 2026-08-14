@@ -3,7 +3,8 @@ name: Keep Revilon awake
 on:
   schedule:
     # Render free services sleep after 15 idle minutes.
-    - cron: "*/10 * * * *"
+    # Offset the schedule from the top of the hour, when GitHub Actions is busiest.
+    - cron: "2-52/10 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -15,4 +16,11 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Ping Revilon health endpoint
-        run: curl --fail --silent --show-error --max-time 90 --retry 2 --retry-delay 5 https://revilonai.com/health/
+        run: >-
+          curl --fail --silent --show-error
+          --connect-timeout 15
+          --max-time 90
+          --retry 3
+          --retry-all-errors
+          --retry-delay 5
+          https://revilon-ai.onrender.com/health/

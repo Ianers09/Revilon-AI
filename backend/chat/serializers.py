@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from .models import Conversation, Message
 
+MAX_MESSAGE_LENGTH = 100000
+
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,7 +32,7 @@ class SendMessageSerializer(serializers.Serializer):
     content = serializers.CharField(
         allow_blank=False,
         trim_whitespace=True,
-        max_length=20000,
+        max_length=MAX_MESSAGE_LENGTH,
     )
     conversation_id = serializers.IntegerField(
         required=False,
