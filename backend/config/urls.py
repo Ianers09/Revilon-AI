@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import FileResponse, HttpResponse, JsonResponse
+from django.shortcuts import render
 from django.urls import include, path, re_path
 from django.views.static import serve
 
@@ -32,8 +33,34 @@ def health_check(request):
     return JsonResponse({"status": "ok"})
 
 
+def about_page(request):
+    return render(request, "about.html")
+
+
+def robots_txt(request):
+    content = "\n".join([
+        "User-agent: *", "Allow: /", "Disallow: /admin/",
+        "Disallow: /api/", "",
+        "Sitemap: https://revilonai.com/sitemap.xml",
+    ])
+    return HttpResponse(content, content_type="text/plain")
+
+
+def sitemap_xml(request):
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://revilonai.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://revilonai.com/about/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+</urlset>
+"""
+    return HttpResponse(content, content_type="application/xml")
+
+
 urlpatterns = [
     path("health/", health_check, name="health-check"),
+    path("about/", about_page, name="about"),
+    path("robots.txt", robots_txt, name="robots-txt"),
+    path("sitemap.xml", sitemap_xml, name="sitemap-xml"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
     path("api/chat/", include("chat.urls")),

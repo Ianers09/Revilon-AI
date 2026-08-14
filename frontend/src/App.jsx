@@ -1119,6 +1119,7 @@ function App() {
           </button>
 
           <div className="landing-actions">
+            <a className="landing-about-link" href="/about/">About</a>
             <button className="landing-sign-in" type="button" onClick={() => openAuth("login")}>
               Sign in
             </button>
@@ -1162,6 +1163,9 @@ function App() {
 
             <p className="landing-small-note">
               Sign in to save conversations and continue your work.
+            </p>
+            <p className="landing-creator-note">
+              Created by <a href="/about/">Ian Oliver M. Mingoy</a>
             </p>
           </div>
         </main>

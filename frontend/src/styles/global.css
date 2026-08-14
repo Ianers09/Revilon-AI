@@ -286,6 +286,33 @@ textarea:disabled {
   gap: 10px;
 }
 
+.landing-about-link {
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 8px;
+  text-decoration: none;
+}
+
+.landing-about-link:hover {
+  color: var(--text-highlight);
+}
+
+.landing-creator-note {
+  color: #777;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.landing-creator-note a {
+  color: #aaa;
+  text-decoration: none;
+}
+
+.landing-creator-note a:hover {
+  color: #eee;
+}
+
 .landing-sign-in,
 .landing-sign-up {
   height: 40px;

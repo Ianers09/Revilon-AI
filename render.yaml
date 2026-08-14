@@ -42,3 +42,5 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      - key: CREATOR_MIDDLE_NAME
+        sync: false
