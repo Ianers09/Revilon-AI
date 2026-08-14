@@ -1672,12 +1672,8 @@ function App() {
                           </div>
                         </td>
                         <td>
-                          <span className={`role-badge ${adminUser.is_staff ? "admin" : "member"}`}>
-                            {adminUser.is_superuser
-                              ? "Superuser"
-                              : adminUser.is_staff
-                                ? "Administrator"
-                                : "Member"}
+                          <span className={`role-badge ${adminUser.is_superuser ? "superuser" : adminUser.is_staff ? "admin" : "member"}`}>
+                            {getRoleLabel(adminUser)}
                           </span>
                         </td>
                         <td>
@@ -1712,7 +1708,7 @@ function App() {
               <Avatar user={selectedAdminUser} size="large" />
               <div>
                 <h2>Manage user</h2>
-                <p>{user.is_superuser ? "Update account details, roles, access, and credentials." : "Review account details and update the member password."}</p>
+                <p>Update account details, roles, access, and credentials.</p>
               </div>
             </div>
 
@@ -1720,20 +1716,20 @@ function App() {
               <div className="form-grid-two">
                 <label>
                   <span>First name</span>
-                  <input value={adminEditForm.first_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, first_name: event.target.value })} disabled={!user.is_superuser} />
+                  <input value={adminEditForm.first_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, first_name: event.target.value })} readOnly={!user.is_superuser} />
                 </label>
                 <label>
                   <span>Last name</span>
-                  <input value={adminEditForm.last_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, last_name: event.target.value })} disabled={!user.is_superuser} />
+                  <input value={adminEditForm.last_name} onChange={(event) => setAdminEditForm({ ...adminEditForm, last_name: event.target.value })} readOnly={!user.is_superuser} />
                 </label>
               </div>
               <label>
                 <span>Username</span>
-                <input value={adminEditForm.username} onChange={(event) => setAdminEditForm({ ...adminEditForm, username: event.target.value })} required disabled={!user.is_superuser} />
+                <input value={adminEditForm.username} onChange={(event) => setAdminEditForm({ ...adminEditForm, username: event.target.value })} required readOnly={!user.is_superuser} />
               </label>
               <label>
                 <span>Email address</span>
-                <input type="email" value={adminEditForm.email} onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })} disabled={!user.is_superuser} />
+                <input type="email" value={adminEditForm.email} onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })} readOnly={!user.is_superuser} />
               </label>
 
               {selectedAdminUser.id !== user.id && (!selectedAdminUser.is_superuser || user.is_superuser) && (

@@ -653,6 +653,18 @@ textarea:disabled {
   box-shadow: 0 0 0 3px rgba(150, 150, 146, 0.07);
 }
 
+.admin-user-modal .form-stack input[readonly] {
+  cursor: text;
+  color: #b7b7b3;
+  border-color: #303030;
+  background: #111;
+}
+
+.admin-user-modal .form-stack input[readonly]:focus {
+  border-color: #454545;
+  box-shadow: none;
+}
+
 .rename-modal .modal-close {
   top: 20px;
   right: 20px;
@@ -2124,6 +2136,12 @@ textarea:disabled {
   color: #d0d0cd;
   border-color: #4b4b49;
   background: #222;
+}
+
+.role-badge.superuser {
+  color: #ededeb;
+  border-color: #62625f;
+  background: #292929;
 }
 
 .status-badge {
