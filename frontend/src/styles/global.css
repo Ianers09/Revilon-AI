@@ -518,7 +518,21 @@ textarea:disabled {
 }
 
 .admin-user-modal {
-  width: min(100%, 570px);
+  width: min(100%, 600px);
+  padding: 30px;
+}
+
+.admin-user-modal .modal-heading {
+  gap: 15px;
+  margin-bottom: 28px;
+}
+
+.admin-user-modal .form-stack {
+  gap: 18px;
+}
+
+.admin-user-modal .form-grid-two {
+  gap: 14px;
 }
 
 .confirm-modal {
@@ -903,8 +917,8 @@ textarea:disabled {
 .reset-complete p { max-width: 300px; margin: 11px 0 25px; color: #92928f; font-size: 14px; line-height: 1.65; }
 .reset-success-action { width: 100%; height: 46px; border-radius: 10px; }
 
-.admin-password-section { padding: 16px; border: 1px solid #303030; border-radius: 12px; background: #0b0b0b; }
-.admin-password-section > div:first-child { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 14px; }
+.admin-password-section { padding: 18px; border: 1px solid #303030; border-radius: 12px; background: #0b0b0b; }
+.admin-password-section > div:first-child { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 18px; }
 .admin-password-section > div:first-child svg { flex: 0 0 auto; margin-top: 2px; color: #999; }
 .admin-password-section > div:first-child span { display: flex; flex-direction: column; gap: 3px; }
 .admin-password-section small { color: #777774; line-height: 1.45; }
@@ -995,8 +1009,14 @@ textarea:disabled {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 9px;
-  margin-top: 6px;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.modal-actions > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .modal-actions-between {
@@ -1005,8 +1025,7 @@ textarea:disabled {
 }
 
 .modal-actions-between > div {
-  display: flex;
-  gap: 9px;
+  gap: 12px;
 }
 
 /* Avatars and account menu */
@@ -2204,13 +2223,13 @@ textarea:disabled {
 }
 
 .toggle-row {
-  min-height: 66px;
+  min-height: 70px;
   display: flex !important;
   flex-direction: row !important;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: #101010;
 }
 
