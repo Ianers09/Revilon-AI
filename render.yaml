@@ -19,11 +19,11 @@ services:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_ALLOWED_HOSTS
-        value: .onrender.com
+        value: .onrender.com,.revilonai.com
       - key: CORS_ALLOWED_ORIGINS
-        value: https://revilon-ai.onrender.com
+        value: https://revilon-ai.onrender.com,https://revilonai.com,https://www.revilonai.com
       - key: CSRF_TRUSTED_ORIGINS
-        value: https://revilon-ai.onrender.com
+        value: https://revilon-ai.onrender.com,https://revilonai.com,https://www.revilonai.com
       - key: EMAIL_BACKEND
         value: django.core.mail.backends.console.EmailBackend
       - key: EMAIL_PROVIDER
