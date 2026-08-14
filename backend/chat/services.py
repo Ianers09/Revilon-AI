@@ -66,11 +66,12 @@ def remove_emojis(value):
 def _system_instructions():
     return SYSTEM_INSTRUCTIONS + (
         '\n\nThe creator\'s given or first name is "Ian Oliver", his middle '
-        'name is "Manugas", and his last name is "Mingoy". The "M." in his '
-        "standard public name stands for Manugas. Always refer to him as "
+        'name is "Manugas", and his last name is "Mingoy". Always refer to '
+        "him as "
         "Ian Oliver M. Mingoy "
-        "unless a user explicitly asks for his middle name or what the "
-        '"M." stands for. Only in that case, answer Manugas. Never volunteer '
+        "unless a user explicitly asks for his middle name or the meaning of "
+        '"M.". In that case, answer exactly: "His middle name is Manugas." '
+        'Do not use the phrase "stands for". Never volunteer '
         "or expand the middle name in a profile, biography, list, summary, or "
         'a request such as "tell me everything".'
     )
@@ -85,6 +86,7 @@ def _explicitly_asks_middle_name(value):
             r"\bwhat(?:\s+is|\s+s)\s+(?:(?:ian\s+s|his)\s+)?mn\b",
             r"\bian(?:\s+s|s)\s+middle\s*name\b",
             r"\bian(?:\s+s|s)\s+mn\b",
+            r"^(?:mn|middle\s*name)$",
             r"\bwhat\s+does\s+(?:the\s+)?m\.?\s+stand\s+for\b",
             r"\bwhat(?:\s+is|'s)\s+(?:the\s+)?m\.?\b",
         )
@@ -214,7 +216,7 @@ def _creator_identity_response(conversation):
         )
 
     if (asks_middle_name or follows_middle_name_question) and creator_context:
-        return "Manugas."
+        return "His middle name is Manugas."
 
     return None
 

@@ -53,7 +53,8 @@ class RevilonIdentityTests(TestCase):
         self.assertIn('first name is "Ian Oliver"', system_content)
         self.assertIn('last name is "Mingoy"', system_content)
         self.assertIn("Always refer to him as Ian Oliver M. Mingoy", system_content)
-        self.assertIn("Only in that case, answer Manugas", system_content)
+        self.assertIn('answer exactly: "His middle name is Manugas."', system_content)
+        self.assertIn('Do not use the phrase "stands for"', system_content)
         self.assertIn('bare reference to "Ian"', system_content)
 
     def test_creator_question_has_consistent_response(self):
@@ -140,6 +141,8 @@ class RevilonIdentityTests(TestCase):
         self.assertFalse(_explicitly_asks_middle_name("Give me his official profile"))
         self.assertTrue(_explicitly_asks_middle_name("What is his middle name?"))
         self.assertTrue(_explicitly_asks_middle_name("What is his mn?"))
+        self.assertTrue(_explicitly_asks_middle_name("mn?"))
+        self.assertTrue(_explicitly_asks_middle_name("middlename"))
         self.assertTrue(_explicitly_asks_middle_name("ians middlename"))
         self.assertTrue(_explicitly_asks_middle_name("Ian's middle name"))
         self.assertTrue(_explicitly_asks_middle_name("What does M. stand for?"))
@@ -178,7 +181,7 @@ class RevilonIdentityTests(TestCase):
         Message.objects.create(
             conversation=conversation,
             role=Message.Role.USER,
-            content="What is his mn?",
+            content="mn?",
         )
         Message.objects.create(
             conversation=conversation,
@@ -191,7 +194,7 @@ class RevilonIdentityTests(TestCase):
             content="What is it?",
         )
 
-        self.assertEqual(generate_ai_response(conversation), "Manugas.")
+        self.assertEqual(generate_ai_response(conversation), "His middle name is Manugas.")
 
     def test_middle_initial_follow_up_has_consistent_response(self):
         user = get_user_model().objects.create_user(
@@ -218,5 +221,5 @@ class RevilonIdentityTests(TestCase):
 
         self.assertEqual(
             generate_ai_response(conversation),
-            "Manugas.",
+            "His middle name is Manugas.",
         )
